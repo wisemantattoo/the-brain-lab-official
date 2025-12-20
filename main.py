@@ -24,15 +24,18 @@ def create_video(fact):
     return "short_video.mp4"
 
 def get_authenticated_service():
+    # משיכת המפתח הסודי מהכספת
     client_config = json.loads(os.environ.get('CLIENT_SECRET_JSON'))
     scopes = ['https://www.googleapis.com/auth/youtube.upload']
     flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_config(client_config, scopes)
     flow.redirect_uri = 'urn:ietf:wg:oauth:2.0:oob'
+    
     auth_code = os.environ.get('YOUTUBE_CODE')
     if not auth_code:
         auth_url, _ = flow.authorization_url(prompt='consent')
         print(f"\n\n👉👉👉 הנה הקישור שלך לאישור (תעתיק לדפדפן):\n\n{auth_url}\n\n")
-        raise Exception("עצור! תעתיק את הלינק למעלה, תקבל קוד מגוגל ותשים אותו ב-Secrets תחת YOUTUBE_CODE")
+        raise Exception("Authorization required")
+    
     flow.fetch_token(code=auth_code)
     return build('youtube', 'v3', credentials=flow.credentials)
 
