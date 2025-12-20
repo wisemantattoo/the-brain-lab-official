@@ -1,25 +1,24 @@
-import random
-from moviepy.editor import ColorClip, TextClip, CompositeVideoClip
+name: Daily Video Bot
+on:
+  schedule:
+    - cron: '0 10 * * *'
+  workflow_dispatch:
 
-# רשימת עובדות (הבוט יבחר אחת באקראי בכל פעם)
-facts = [
-    "Psychology says: Being alone for a long time is as bad for your health as smoking 15 cigarettes a day.",
-    "Your brain is more creative when you're tired.",
-    "The way you dress is linked to your mood.",
-    "Smart people tend to have fewer friends than the average person."
-]
-
-def create_video():
-    fact = random.choice(facts)
-    # יצירת רקע שחור אנכי (מתאים ל-Shorts)
-    bg = ColorClip(size=(1080, 1920), color=(20, 20, 20), duration=5)
-    # הוספת הטקסט
-    txt = TextClip(fact, fontsize=70, color='white', size=(900, None), method='caption')
-    txt = txt.set_position('center').set_duration(5)
-    
-    final = CompositeVideoClip([bg, txt])
-    final.write_videofile("short_video.mp4", fps=24, codec="libx264")
-    print(f"Video created successfully for: {fact}")
-
-if __name__ == "__main__":
-    create_video()
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+          # השורה הבאה מתקנת את הבעיה האדומה:
+          sudo sed -i 's/<policy domain="path" rights="none" pattern="@\*"//g' /etc/ImageMagick-6/policy.xml
+          pip install -r requirements.txt
+      - name: Run Bot
+        run: python main.py
