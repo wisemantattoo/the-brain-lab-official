@@ -17,6 +17,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y imagemagick fonts-liberation
+          # השורה הבאה מתקנת את שגיאת האבטחה שראינו בצילום מסך:
           sudo sed -i 's/rights="none" pattern="@\*"/rights="read|write" pattern="@\*"/g' /etc/ImageMagick-6/policy.xml
       - name: Install Python Dependencies
         run: pip install -r requirements.txt
