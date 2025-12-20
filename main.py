@@ -13,12 +13,13 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-      - name: Install dependencies
+      - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y imagemagick
-          # השורה הבאה מתקנת את הבעיה האדומה:
+          sudo apt-get install -y imagemagick fonts-liberation
+          # תיקון הרשאות קריטי ל-ImageMagick
           sudo sed -i 's/<policy domain="path" rights="none" pattern="@\*"//g' /etc/ImageMagick-6/policy.xml
-          pip install -r requirements.txt
+      - name: Install Python Dependencies
+        run: pip install -r requirements.txt
       - name: Run Bot
         run: python main.py
