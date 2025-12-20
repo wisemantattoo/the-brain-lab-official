@@ -17,7 +17,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y imagemagick fonts-liberation
-          # תיקון הרשאות קריטי ל-ImageMagick
           sudo sed -i 's/<policy domain="path" rights="none" pattern="@\*"//g' /etc/ImageMagick-6/policy.xml
       - name: Install Python Dependencies
         run: pip install -r requirements.txt
