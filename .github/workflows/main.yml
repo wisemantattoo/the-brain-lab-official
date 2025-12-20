@@ -1,0 +1,22 @@
+name: Daily Video Bot
+on:
+  schedule:
+    - cron: '0 10 * * *' # ירוץ כל יום ב-10 בבוקר באופן אוטומטי
+  workflow_dispatch: # מאפשר לך להריץ את זה ידנית לבדיקה
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+          pip install -r requirements.txt
+      - name: Run Bot
+        run: python main.py
