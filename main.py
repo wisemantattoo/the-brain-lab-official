@@ -1,22 +1,22 @@
 import os
 import time
-# כאן יבואו הייבואים של הספריות שאתה משתמש בהן (כמו googleapiclient)
+# כאן יבואו הייבואים של הספריות (כמו googleapiclient וכו') - וודא שהם קיימים בקובץ המקורי שלך
 
 # --- הגדרות המותג והמכירות ---
-GUMROAD_LINK = "https://wisemantattoo.gumroad.com/l/vioono"
+GUMROAD_LINK = "https://thebrainlabofficial.gumroad.com/l/vioono"
 CHANNEL_NAME = "The Brain Lab"
 
 def get_video_metadata(fact_title):
     """יוצר כותרת ותיאור שיווקי לכל סרטון"""
     title = f"{fact_title} | #TheBrainLab"
     
-    # תיאור הסרטון הכולל את הלינק למוצר ב-4.99$
+    # תיאור הסרטון הכולל את הלינק החדש
     description = (
         f"{fact_title}\n\n"
         f"🧠 STOP OPERATING ON AUTOPILOT. REWIRE YOUR CIRCUITRY.\n"
         f"Get our official Morning Protocol #001 here:\n"
         f"{GUMROAD_LINK}\n\n"
-        f"Join the experiment. Decode your mind, one fact at a time. 🔬\n"
+        f"Join the experiment. Decode your mind. 🔬\n"
         f"#Neuroscience #Mindset #Success #Shorts"
     )
     return title, description
@@ -30,12 +30,12 @@ def get_automated_comment():
     )
     return comment
 
-# --- לוגיקת העלאה (כאן נמצא הקוד הטכני שלך) ---
+# --- לוגיקת העלאה ---
 def upload_to_youtube():
-    # כאן נמצאת הפונקציה שמעלה את הסרטון שלך.
-    # וודא שהיא משתמשת ב-title, description ו-comment שהגדרנו למעלה.
+    # שים לב: כאן אמורה להיות הפונקציה הטכנית שלך להעלאה.
+    # הקוד הזה רק מגדיר את הטקסטים. וודא ששאר הקוד הטכני (התחברות ליוטיוב וכו') נשמר.
     print(f"Uploading video with link: {GUMROAD_LINK}")
+    # ... כאן ממשיך הקוד של העלאת הסרטון ...
 
 if __name__ == "__main__":
-    # הבוט מתחיל לעבוד
     upload_to_youtube()
