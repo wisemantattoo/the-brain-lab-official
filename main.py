@@ -8,7 +8,7 @@ from moviepy.editor import ColorClip, TextClip, CompositeVideoClip
 
 # --- הגדרות ---
 # כרגע שמתי כאן הנעה להרשמה לערוץ. כ שיהיה לך לינק, פשוט תחליף את הטקסט למטה.
-CTA_TEXT = "🧠 Subscribe for your daily dose of psychology facts!" 
+CTA_TEXT = "🧠 Subscribe to The Brain Lab for your daily dose of psychology!" 
 
 # --- מחסן של 50 עובדות פסיכולוגיות ---
 FACTS = [
@@ -65,19 +65,15 @@ FACTS = [
 ]
 
 def create_video(fact):
-    # יצירת רקע שחור
     bg = ColorClip(size=(1080, 1920), color=(20, 20, 20), duration=5)
-    # יצירת הטקסט
     txt = TextClip(fact, fontsize=70, color='white', font='Liberation-Sans', size=(900, None), method='caption')
     txt = txt.set_position('center').set_duration(5)
-    # חיבור לסרטון
     final = CompositeVideoClip([bg, txt])
     final.write_videofile("short_video.mp4", fps=24, codec="libx264", audio=False)
     return "short_video.mp4"
 
 def get_authenticated_service():
     client_config = json.loads(os.environ.get('CLIENT_SECRET_JSON'))['installed']
-    # שימוש ב-Refresh Token ששמרנו
     creds = google.oauth2.credentials.Credentials(
         None,
         refresh_token=os.environ.get('YOUTUBE_REFRESH_TOKEN'),
@@ -88,12 +84,11 @@ def get_authenticated_service():
     return build('youtube', 'v3', credentials=creds)
 
 def upload_and_comment(youtube, file_path, fact):
-    # 1. העלאת הסרטון
     request = youtube.videos().insert(
         part="snippet,status",
         body={
             "snippet": {
-                "title": f"Amazing Fact: {fact[:50]}",
+                "title": f"The Brain Lab: {fact[:50]}...",
                 "description": "Daily Psychology Facts. Subscribe for more! #shorts #psychology",
                 "categoryId": "27"
             },
@@ -104,11 +99,24 @@ def upload_and_comment(youtube, file_path, fact):
     response = request.execute()
     video_id = response['id']
     
-    # 2. הוספת תגובה אוטומטית
     youtube.commentThreads().insert(
         part="snippet",
         body={
             "snippet": {
                 "videoId": video_id,
                 "topLevelComment": {
-                    "snippet": {"textOriginal": CTA_TEXT
+                    "snippet": {"textOriginal": CTA_TEXT}
+                }
+            }
+        }
+    ).execute()
+    print(f"🚀 Success! Video ID: {video_id} uploaded.")
+
+if __name__ == "__main__":
+    try:
+        service = get_authenticated_service()
+        fact = random.choice(FACTS)
+        video_file = create_video(fact)
+        upload_and_comment(service, video_file, fact)
+    except Exception as e:
+        print(f"Error: {e}")
