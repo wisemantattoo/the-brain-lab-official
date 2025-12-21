@@ -1,23 +1,49 @@
 import os
 import random
+import json
+import google_auth_oauthlib.flow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
+from moviepy.editor import ColorClip, TextClip, CompositeVideoClip
 
-# --- הגדרת הלינק החדש שלך ---
+# --- הלינק החדש והמעודכן ---
 GUMROAD_LINK = "https://thebrainlabofficial.gumroad.com/l/vioono"
 
-# --- רשימת העובדות (המאגר שלך) ---
-FACTS = [
-    "Did you know? Your brain uses 20% of your body's energy while resting. 🧠⚡ #Neuroscience",
-    "Psychology Fact: We are more creative when we are tired. 🎨😴 #Mindset",
-    "Neuroplasticity means your brain changes physically with every new thought. 🔄🧬 #Growth",
-    "Dopamine isn't just about pleasure; it's about the anticipation of reward. 🎯🍬 #Motivation",
-    "Your brain processes images 60,000 times faster than text. 📸⚡ #Facts"
+# רשימת העובדות
+facts = [
+    "Psychology says: Your brain does more creative work when you are tired.",
+    "Smart people tend to have fewer friends than the average person.",
+    "The way you dress is linked to your mood.",
+    "Pretending not to care is the habit of someone who generally cares the most.",
+    "The type of music you listen to affects the way you perceive the world."
 ]
 
-def get_video_metadata(fact):
-    """יוצר כותרת ותיאור עם הלינק החדש"""
-    title = f"Brain Fact: {fact.split(':')[0]} | #TheBrainLab"
+def create_video(fact):
+    # יצירת רקע שחור
+    bg = ColorClip(size=(1080, 1920), color=(20, 20, 20), duration=5)
+    # יצירת הטקסט
+    txt = TextClip(fact, fontsize=70, color='white', font='Liberation-Sans', size=(900, None), method='caption')
+    txt = txt.set_position('center').set_duration(5)
+    # חיבור לסרטון
+    final = CompositeVideoClip([bg, txt])
+    final.write_videofile("short_video.mp4", fps=24, codec="libx264", audio=False)
+    return "short_video.mp4"
+
+def get_authenticated_service():
+    client_config = json.loads(os.environ.get('CLIENT_SECRET_JSON'))
+    scopes = ['https://www.googleapis.com/auth/youtube.upload']
+    flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_config(client_config, scopes)
+    flow.redirect_uri = 'urn:ietf:wg:oauth:2.0:oob'
+    
+    # שימוש בקוד שהכנסת ל-Secrets
+    auth_code = os.environ.get('YOUTUBE_CODE')
+    flow.fetch_token(code=auth_code)
+    
+    return build('youtube', 'v3', credentials=flow.credentials)
+
+def upload_video(youtube, file_path, fact):
+    # בניית הכותרת והתיאור עם הלינק החדש
+    title = f"Brain Fact: {fact.split(':')[0]}... #TheBrainLab"
     
     description = (
         f"{fact}\n\n"
@@ -27,21 +53,31 @@ def get_video_metadata(fact):
         f"Join the experiment. Decode your mind. 🔬\n"
         f"#Neuroscience #Mindset #Success #Shorts"
     )
-    return title, description
 
-def upload_video():
-    # חיבור ליוטיוב (וודא שה-SECRETS מוגדרים ב-GitHub)
-    api_key = os.environ.get("YOUTUBE_API_KEY") # אם אתה משתמש ב-OAuth זה שונה, אבל זה המבנה הכללי
-    
-    # בחירת עובדה רנדומלית
-    fact = random.choice(FACTS)
-    title, description = get_video_metadata(fact)
-    
-    print(f"Preparing to upload: {title}")
-    print(f"Link used: {GUMROAD_LINK}")
-    
-    # כאן יבוא קוד ההעלאה הטכני שלך (שכבר עובד לפי ה-V הירוק!)
-    # אל תמחק את החלק הטכני של ההעלאה שיש לך כבר בקובץ, רק עדכן את הטקסטים למעלה.
+    request = youtube.videos().insert(
+        part="snippet,status",
+        body={
+            "snippet": {
+                "title": title,
+                "description": description,
+                "categoryId": "27" # Education
+            },
+            "status": {
+                "privacyStatus": "public",
+                "selfDeclaredMadeForKids": False
+            }
+        },
+        media_body=MediaFileUpload(file_path)
+    )
+    response = request.execute()
+    print(f"🚀 Success! Video uploaded. ID: {response.get('id')}")
 
 if __name__ == "__main__":
-    upload_video()
+    try:
+        service = get_authenticated_service()
+        current_fact = random.choice(facts)
+        video_file = create_video(current_fact)
+        upload_video(service, video_file, current_fact)
+    except Exception as e:
+        print(f"Error: {e}")
+        exit(1)
