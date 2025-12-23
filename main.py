@@ -89,14 +89,14 @@ def create_thumbnail_image(fact):
     
     txt = TextClip(
         fact, 
-        fontsize=70,                 # גודל אופטימלי
+        fontsize=70,
         color='white', 
-        font='Liberation-Sans-Bold', # שימוש בפונט מודגש אמיתי!
+        font='Liberation-Sans-Bold', 
         size=(850, None), 
         method='caption'
-        # הסרנו את stroke_color ו-stroke_width
     )
-    txt = txt.set_position(('center', 560))
+    # תיקון מיקום: חזרה למרכז המסך
+    txt = txt.set_position('center')
     
     thumb_clip = CompositeVideoClip([bg, txt])
     thumb_file = "custom_thumbnail.png"
@@ -111,14 +111,14 @@ def create_video(fact):
     
     txt = TextClip(
         fact, 
-        fontsize=70,                 # גודל אופטימלי
+        fontsize=70,
         color='white', 
-        font='Liberation-Sans-Bold', # שימוש בפונט מודגש אמיתי!
+        font='Liberation-Sans-Bold', 
         size=(850, None), 
         method='caption'
-        # הסרנו את stroke_color ו-stroke_width
     )
-    txt = txt.set_position(('center', 560)).set_duration(5)
+    # תיקון מיקום: חזרה למרכז המסך
+    txt = txt.set_position('center').set_duration(5)
     
     final = CompositeVideoClip([bg, txt])
     final.write_videofile("short_video.mp4", fps=30, codec="libx264", audio=False, preset='medium', threads=4)
