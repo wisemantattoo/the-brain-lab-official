@@ -53,4 +53,102 @@ facts = [
     "The smell of chocolate increases theta brain waves, which triggers relaxation.",
     "People who sleep on their stomach have more intense dreams.",
     "Your brain continues to develop until your late 40s.",
-    "Being ignored causes the same chemical
+    "Being ignored causes the same chemical reaction in the brain as a physical injury.",
+    "Depression is often the result of overthinking; the mind creates problems that didn't exist.",
+    "Tears caused by sadness, happiness, and onions all look different under a microscope.",
+    "Hugging for 20 seconds releases oxytocin, which can make you trust someone more.",
+    "People who are prone to guilt are better at understanding other people's thoughts and feelings.",
+    "If you want to know if someone is watching you, yawn. If they yawn too, they were watching.",
+    "A crush only lasts for a maximum of 4 months. If it exceeds, you are in love.",
+    "The average person tells 4 lies a day.",
+    "Women have twice as many pain receptors on their bodies as men, but a much higher pain tolerance.",
+    "People are more honest when they are tired.",
+    "Writing down negative thoughts and tossing them in a trash can can improve your mood.",
+    "Your brain perceives the future as a variant of the past.",
+    "Generally, people who give the best advice are the ones with the most problems.",
+    "It is impossible to hum while holding your nose.",
+    "People read faster with longer lines, but prefer shorter lines.",
+    "We're only capable of being close with about 150 people.",
+    "The sharper your brain, the more you dream.",
+    "Optimism can be learned.",
+    "Meditation can physically change your brain structure."
+]
+
+# --- פונקציה לבחירת עובדה ---
+def get_daily_fact():
+    day_of_year = datetime.datetime.now().timetuple().tm_yday
+    fact_index = day_of_year % len(facts)
+    selected_fact = facts[fact_index]
+    print(f"📅 Day {day_of_year}: Selected fact #{fact_index}", flush=True)
+    return selected_fact
+
+# --- יצירת תמונת טמנייל ---
+def create_thumbnail_image(fact):
+    print("🖼️ Creating blue thumbnail image...", flush=True)
+    bg = ColorClip(size=(1080, 1920), color=(0, 50, 200), duration=1)
+    
+    txt = TextClip(
+        fact, 
+        fontsize=75,              # גודל גדול וברור
+        color='white', 
+        font='Liberation-Sans', 
+        size=(850, None), 
+        method='caption',
+        stroke_color='black',
+        stroke_width=4            # מסגרת עבה ליצירת אפקט מודגש
+    )
+    txt = txt.set_position(('center', 560))
+    
+    thumb_clip = CompositeVideoClip([bg, txt])
+    thumb_file = "custom_thumbnail.png"
+    thumb_clip.save_frame(thumb_file, t=0.1)
+    print("✅ Thumbnail image saved!", flush=True)
+    return thumb_file
+
+# --- יצירת הסרטון ---
+def create_video(fact):
+    print("🎥 Starting video creation...", flush=True)
+    bg = ColorClip(size=(1080, 1920), color=(20, 20, 20), duration=5)
+    
+    txt = TextClip(
+        fact, 
+        fontsize=75,              # גודל גדול וברור
+        color='white', 
+        font='Liberation-Sans', 
+        size=(850, None), 
+        method='caption',
+        stroke_color='black', 
+        stroke_width=4            # מסגרת עבה ליצירת אפקט מודגש
+    )
+    txt = txt.set_position(('center', 560)).set_duration(5)
+    
+    final = CompositeVideoClip([bg, txt])
+    final.write_videofile("short_video.mp4", fps=30, codec="libx264", audio=False, preset='medium', threads=4)
+    print("✅ Video created successfully!", flush=True)
+    return "short_video.mp4"
+
+def get_authenticated_service():
+    print("🔑 Authenticating...", flush=True)
+    client_config = json.loads(os.environ.get('CLIENT_SECRET_JSON'))
+    config = next(iter(client_config.values()))
+    creds = Credentials(
+        token=None,
+        refresh_token=os.environ.get('YOUTUBE_REFRESH_TOKEN'),
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=config['client_id'],
+        client_secret=config['client_secret']
+    )
+    return build('youtube', 'v3', credentials=creds)
+
+def upload_video_and_thumbnail(youtube, video_path, thumbnail_path, fact):
+    print("🚀 Starting video upload...", flush=True)
+    
+    base_title = fact.split(':')[0]
+    if len(base_title) > 50: base_title = base_title[:50]
+    title = f"Brain Fact: {base_title}... #TheBrainLab"
+    
+    description = (
+        f"{fact}\n\n"
+        f"🧠 STOP OPERATING ON AUTOPILOT. REWIRE YOUR CIRCUITRY.\n"
+        f"Get our official Morning Protocol #001 here: 👇\n"
+        f"{GUMROAD
