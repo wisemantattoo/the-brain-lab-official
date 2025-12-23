@@ -89,13 +89,13 @@ def create_thumbnail_image(fact):
     
     txt = TextClip(
         fact, 
-        fontsize=75,              # גודל גדול וברור
+        fontsize=75,
         color='white', 
         font='Liberation-Sans', 
         size=(850, None), 
         method='caption',
         stroke_color='black',
-        stroke_width=4            # מסגרת עבה ליצירת אפקט מודגש
+        stroke_width=4
     )
     txt = txt.set_position(('center', 560))
     
@@ -112,13 +112,13 @@ def create_video(fact):
     
     txt = TextClip(
         fact, 
-        fontsize=75,              # גודל גדול וברור
+        fontsize=75,
         color='white', 
         font='Liberation-Sans', 
         size=(850, None), 
         method='caption',
         stroke_color='black', 
-        stroke_width=4            # מסגרת עבה ליצירת אפקט מודגש
+        stroke_width=4
     )
     txt = txt.set_position(('center', 560)).set_duration(5)
     
@@ -145,10 +145,4 @@ def upload_video_and_thumbnail(youtube, video_path, thumbnail_path, fact):
     
     base_title = fact.split(':')[0]
     if len(base_title) > 50: base_title = base_title[:50]
-    title = f"Brain Fact: {base_title}... #TheBrainLab"
-    
-    description = (
-        f"{fact}\n\n"
-        f"🧠 STOP OPERATING ON AUTOPILOT. REWIRE YOUR CIRCUITRY.\n"
-        f"Get our official Morning Protocol #001 here: 👇\n"
-        f"{GUMROAD
+    title = f"Brain Fact: {base_title}... #The
