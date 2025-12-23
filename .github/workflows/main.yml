@@ -26,12 +26,12 @@ jobs:
 
     - name: Install Python Dependencies
       run: |
-        # הוספנו את requests לרשימה
-        pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client moviepy==1.0.3 requests
+        # הוספנו את Pillow==9.5.0 כדי לתקן את שגיאת התמונה
+        pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client moviepy==1.0.3 requests Pillow==9.5.0
 
     - name: Run Bot
       env:
         CLIENT_SECRET_JSON: ${{ secrets.CLIENT_SECRET_JSON }}
         YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
-        UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }} # המפתח החדש
+        UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
       run: python main.py
