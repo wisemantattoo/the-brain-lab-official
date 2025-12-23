@@ -76,13 +76,9 @@ facts = [
 
 # --- פונקציה לבחירת עובדה לפי היום בשנה ---
 def get_daily_fact():
-    # מקבל את המספר הסידורי של היום בשנה (למשל, היום ה-357 בשנה)
     day_of_year = datetime.datetime.now().timetuple().tm_yday
-    
-    # בוחר עובדה לפי היום. המודולו (%) מבטיח שגם אם נעבור את יום 60, הוא יחזור להתחלה
     fact_index = day_of_year % len(facts)
     selected_fact = facts[fact_index]
-    
     print(f"📅 Day {day_of_year}: Selected fact #{fact_index}", flush=True)
     return selected_fact
 
@@ -91,6 +87,7 @@ def create_thumbnail_image(fact):
     print("🖼️ Creating blue thumbnail image...", flush=True)
     bg = ColorClip(size=(1080, 1920), color=(0, 50, 200), duration=1)
     
+    # חזרה לפונט המקורי (Liberation-Sans)
     txt = TextClip(
         fact, 
         fontsize=65, 
@@ -113,6 +110,7 @@ def create_video(fact):
     print("🎥 Starting video creation...", flush=True)
     bg = ColorClip(size=(1080, 1920), color=(20, 20, 20), duration=5)
     
+    # חזרה לפונט המקורי (Liberation-Sans)
     txt = TextClip(
         fact, 
         fontsize=65, 
@@ -195,15 +193,10 @@ def upload_video_and_thumbnail(youtube, video_path, thumbnail_path, fact):
 if __name__ == "__main__":
     try:
         service = get_authenticated_service()
-        
-        # שימוש בפונקציה החדשה לבחירת עובדה
         current_fact = get_daily_fact()
-        
         video_file = create_video(current_fact)
         thumbnail_file = create_thumbnail_image(current_fact)
-        
         upload_video_and_thumbnail(service, video_file, thumbnail_file, current_fact)
-        
     except Exception as e:
         print(f"❌ Error: {e}")
         exit(1)
