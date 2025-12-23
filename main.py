@@ -143,6 +143,59 @@ def get_authenticated_service():
 def upload_video_and_thumbnail(youtube, video_path, thumbnail_path, fact):
     print("🚀 Starting video upload...", flush=True)
     
+    # תיקון לשורת הכותרת כדי שלא תישבר
     base_title = fact.split(':')[0]
     if len(base_title) > 50: base_title = base_title[:50]
-    title = f"Brain Fact: {base_title}... #The
+    title = "Brain Fact: " + base_title + "... #TheBrainLab"
+    
+    # תיקון לתיאור - שימוש בחיבור שורות בטוח
+    description = (
+        f"{fact}\n\n"
+        "🧠 STOP OPERATING ON AUTOPILOT. REWIRE YOUR CIRCUITRY.\n"
+        "Get our official Morning Protocol #001 here: 👇\n"
+        f"{GUMROAD_LINK}\n\n"
+        "#Neuroscience #Mindset #Success #Shorts"
+    )
+
+    request = youtube.videos().insert(
+        part="snippet,status",
+        body={
+            "snippet": {
+                "title": title,
+                "description": description,
+                "categoryId": "27"
+            },
+            "status": {
+                "privacyStatus": "public",
+                "selfDeclaredMadeForKids": False
+            }
+        },
+        media_body=MediaFileUpload(video_path)
+    )
+    response = request.execute()
+    video_id = response.get('id')
+    print(f"✅ Video Uploaded! ID: {video_id}", flush=True)
+    
+    print("⏳ Waiting for YouTube to process before setting thumbnail...", flush=True)
+    time.sleep(5)
+
+    print(f"🖼️ Uploading custom thumbnail for video {video_id}...", flush=True)
+    try:
+        youtube.thumbnails().set(
+            videoId=video_id,
+            media_body=MediaFileUpload(thumbnail_path)
+        ).execute()
+        print("✅ Custom thumbnail set successfully!", flush=True)
+    except Exception as e:
+        print(f"⚠️ Warning: Could not set thumbnail. Error: {e}")
+
+if __name__ == "__main__":
+    try:
+        service = get_authenticated_service()
+        current_fact = get_daily_fact()
+        video_file = create_video(current_fact)
+        thumbnail_file = create_thumbnail_image(current_fact)
+        upload_video_and_thumbnail(service, video_file, thumbnail_file, current_fact)
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        exit(1)
