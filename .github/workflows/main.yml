@@ -2,7 +2,7 @@ name: Daily Video Bot
 
 on:
   schedule:
-    - cron: '0 8 * * *' # ירוץ כל יום ב-8 בבוקר
+    - cron: '0 8 * * *' # רץ כל יום ב-8 בבוקר UTC
   workflow_dispatch:      # מאפשר הרצה ידנית
 
 jobs:
@@ -22,16 +22,16 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y imagemagick
-        # תיקון קריטי ל-MoviePy כדי שיעבוד עם טקסט
         sudo sed -i 's/none/read,write/g' /etc/ImageMagick-6/policy.xml
 
     - name: Install Python Dependencies
       run: |
-        # הסרנו את imageio==2.4.1 כדי למנוע התנגשות
-        pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client moviepy==1.0.3
+        # הוספנו את requests לרשימה
+        pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client moviepy==1.0.3 requests
 
     - name: Run Bot
       env:
         CLIENT_SECRET_JSON: ${{ secrets.CLIENT_SECRET_JSON }}
         YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }} # המפתח החדש
       run: python main.py
