@@ -89,13 +89,12 @@ def create_thumbnail_image(fact):
     
     txt = TextClip(
         fact, 
-        fontsize=75,
+        fontsize=70,                 # גודל אופטימלי
         color='white', 
-        font='Liberation-Sans', 
+        font='Liberation-Sans-Bold', # שימוש בפונט מודגש אמיתי!
         size=(850, None), 
-        method='caption',
-        stroke_color='black',
-        stroke_width=4
+        method='caption'
+        # הסרנו את stroke_color ו-stroke_width
     )
     txt = txt.set_position(('center', 560))
     
@@ -112,13 +111,12 @@ def create_video(fact):
     
     txt = TextClip(
         fact, 
-        fontsize=75,
+        fontsize=70,                 # גודל אופטימלי
         color='white', 
-        font='Liberation-Sans', 
+        font='Liberation-Sans-Bold', # שימוש בפונט מודגש אמיתי!
         size=(850, None), 
-        method='caption',
-        stroke_color='black', 
-        stroke_width=4
+        method='caption'
+        # הסרנו את stroke_color ו-stroke_width
     )
     txt = txt.set_position(('center', 560)).set_duration(5)
     
@@ -143,12 +141,10 @@ def get_authenticated_service():
 def upload_video_and_thumbnail(youtube, video_path, thumbnail_path, fact):
     print("🚀 Starting video upload...", flush=True)
     
-    # תיקון לשורת הכותרת כדי שלא תישבר
     base_title = fact.split(':')[0]
     if len(base_title) > 50: base_title = base_title[:50]
     title = "Brain Fact: " + base_title + "... #TheBrainLab"
     
-    # תיקון לתיאור - שימוש בחיבור שורות בטוח
     description = (
         f"{fact}\n\n"
         "🧠 STOP OPERATING ON AUTOPILOT. REWIRE YOUR CIRCUITRY.\n"
