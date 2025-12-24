@@ -6,12 +6,14 @@ import requests
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
-from moviepy.editor import ColorClip, TextClip, CompositeVideoClip, ImageClip
+from moviepy.editor import ColorClip, TextClip, CompositeVideoClip, ImageClip, AudioFileClip
 
-# --- הלינק שלך ---
+# --- הגדרות ---
 GUMROAD_LINK = "https://thebrainlabofficial.gumroad.com/l/vioono"
+VIDEO_DURATION = 5 # שניות
+AUDIO_FILENAME = "Resolution - Wayne Jones.mp3" # השם המדויק שהעלית
 
-# --- מאגר עובדות ממוקד: אינטליגנציה חברתית (התוכן שעובד הכי טוב) ---
+# --- מאגר עובדות אינטליגנציה חברתית (מבוסס על הנתונים המצליחים ביותר) ---
 facts_data = [
     ("Smart people tend to have fewer friends than the average person.", "smart alone"),
     ("If someone is laughing too much, even at stupid things, they are lonely deep inside.", "lonely person"),
@@ -28,8 +30,7 @@ facts_data = [
 def get_daily_content():
     day_of_year = datetime.datetime.now().timetuple().tm_yday
     index = day_of_year % len(facts_data)
-    selected_fact, keyword = facts_data[index]
-    return selected_fact, keyword
+    return facts_data[index]
 
 def download_unsplash_image(keyword):
     access_key = os.environ.get('UNSPLASH_ACCESS_KEY')
@@ -38,46 +39,43 @@ def download_unsplash_image(keyword):
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json()
-            image_url = data['urls']['regular']
-            img_data = requests.get(image_url).content
-            with open('bg_image.jpg', 'wb') as handler:
-                handler.write(img_data)
+            img_data = requests.get(data['urls']['regular']).content
+            with open('bg_image.jpg', 'wb') as h: h.write(img_data)
             return 'bg_image.jpg'
     except: return None
 
 def create_video(fact, image_path):
-    print("🎥 Creating video with full-screen overlay fix...", flush=True)
-    video_size = (1080, 1920)
+    print(f"🎥 Creating video with music: {AUDIO_FILENAME}", flush=True)
+    size = (1080, 1920)
     
     if image_path:
-        # התמונה מוגדלת לגובה 1920 וממורכזת
-        bg = ImageClip(image_path).resize(height=1920).set_position('center').set_duration(5)
+        bg = ImageClip(image_path).resize(height=1920).set_position('center').set_duration(VIDEO_DURATION)
     else:
-        bg = ColorClip(size=video_size, color=(20, 20, 20), duration=5)
+        bg = ColorClip(size=size, color=(20, 20, 20), duration=VIDEO_DURATION)
     
-    # השכבה השחורה מוגדרת בדיוק לגודל המסך המלא
-    dim_layer = ColorClip(size=video_size, color=(0,0,0), duration=5).set_opacity(0.5)
+    dim = ColorClip(size=size, color=(0,0,0), duration=VIDEO_DURATION).set_opacity(0.5)
+    txt = TextClip(fact, fontsize=70, color='white', font='Liberation-Sans-Bold', size=(850, None), method='caption').set_position('center').set_duration(VIDEO_DURATION)
     
-    txt = TextClip(
-        fact, 
-        fontsize=70, 
-        color='white', 
-        font='Liberation-Sans-Bold', 
-        size=(850, None), 
-        method='caption'
-    )
-    txt = txt.set_position('center').set_duration(5)
+    video = CompositeVideoClip([bg, dim, txt], size=size)
     
-    # התיקון הקריטי: הגדרת גודל (size) מפורש לקומפוזיציה
-    final = CompositeVideoClip([bg, dim_layer, txt], size=video_size)
-    
-    # 25 FPS לפי העדפת המשתמש
-    final.write_videofile("short_video.mp4", fps=25, codec="libx264", audio=False)
+    # הוספת מוזיקה מהקובץ הספציפי שלך
+    try:
+        if os.path.exists(AUDIO_FILENAME):
+            audio = AudioFileClip(AUDIO_FILENAME).subclip(0, VIDEO_DURATION).volumex(0.2)
+            video = video.set_audio(audio)
+            print("🎵 Background music added successfully!", flush=True)
+        else:
+            print(f"⚠️ Music file {AUDIO_FILENAME} not found in repository.", flush=True)
+    except Exception as e:
+        print(f"⚠️ Audio processing error: {e}", flush=True)
+
+    # 25 FPS לפי דרישת המשתמש
+    video.write_videofile("short_video.mp4", fps=25, codec="libx264", audio_codec="aac")
     return "short_video.mp4"
 
-def get_authenticated_service():
-    client_config = json.loads(os.environ.get('CLIENT_SECRET_JSON'))
-    config = next(iter(client_config.values()))
+def get_service():
+    creds_json = json.loads(os.environ.get('CLIENT_SECRET_JSON'))
+    config = next(iter(creds_json.values()))
     creds = Credentials(
         token=None, refresh_token=os.environ.get('YOUTUBE_REFRESH_TOKEN'),
         token_uri="https://oauth2.googleapis.com/token",
@@ -86,7 +84,8 @@ def get_authenticated_service():
     return build('youtube', 'v3', credentials=creds)
 
 def post_comment(youtube, video_id):
-    print(f"💬 Posting pinned comment for Gumroad link...", flush=True)
+    print("⏳ Waiting 20 seconds for YouTube processing...", flush=True)
+    time.sleep(20)
     try:
         youtube.commentThreads().insert(
             part="snippet",
@@ -101,36 +100,32 @@ def post_comment(youtube, video_id):
                 }
             }
         ).execute()
-        print("✅ Comment posted!")
+        print("✅ Comment posted!", flush=True)
     except Exception as e:
         print(f"⚠️ Comment failed: {e}")
 
-def upload_video(youtube, video_path, fact):
+def upload_video(youtube, path, fact):
     title = "Social Intelligence: " + (fact[:40] + "..." if len(fact)>40 else fact)
     request = youtube.videos().insert(
         part="snippet,status",
         body={
-            "snippet": {
-                "title": title, 
-                "description": fact + "\n\n#Psychology #SocialIntelligence #Shorts", 
-                "categoryId": "27"
-            },
+            "snippet": {"title": title, "description": fact + "\n\n#Psychology #SocialIntelligence #Shorts", "categoryId": "27"},
             "status": {"privacyStatus": "public", "selfDeclaredMadeForKids": False}
         },
-        media_body=MediaFileUpload(video_path)
+        media_body=MediaFileUpload(path)
     )
     response = request.execute()
-    video_id = response.get('id')
-    print(f"✅ Uploaded! ID: {video_id}")
-    post_comment(youtube, video_id)
-    return video_id
+    v_id = response.get('id')
+    print(f"✅ Uploaded! ID: {v_id}")
+    post_comment(youtube, v_id)
+    return v_id
 
 if __name__ == "__main__":
     try:
-        service = get_authenticated_service()
+        service = get_service()
         fact, keyword = get_daily_content()
-        image = download_unsplash_image(keyword)
-        video = create_video(fact, image)
-        upload_video(service, video, fact)
+        img = download_unsplash_image(keyword)
+        video_file = create_video(fact, img)
+        upload_video(service, video_file, fact)
     except Exception as e:
-        print(f"❌ Final Error Check: {e}")
+        print(f"❌ Error: {e}")
