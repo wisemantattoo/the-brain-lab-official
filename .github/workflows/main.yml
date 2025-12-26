@@ -2,8 +2,8 @@ name: Daily Video Bot
 
 on:
   schedule:
-    - cron: '0 8 * * *' # רץ כל יום ב-8 בבוקר UTC
-  workflow_dispatch:      # מאפשר הרצה ידנית בלחיצת כפתור
+    - cron: '0 8 * * *' # רץ אוטומטית כל יום ב-8 בבוקר
+  workflow_dispatch:      # מאפשר לך להריץ ידנית מתי שבא לך
 
 jobs:
   build:
@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.9'
-          cache: 'pip' # אופציונלי: מזרז הרצות עתידיות
+          cache: 'pip'
 
       - name: Install System Dependencies
         run: |
@@ -36,5 +36,5 @@ jobs:
           CLIENT_SECRET_JSON: ${{ secrets.CLIENT_SECRET_JSON }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
           UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
-          # מכיוון שציינת שאתה עובד ב-25fps, וודא שהסקריפט main.py אכן מוגדר לזה
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python main.py
