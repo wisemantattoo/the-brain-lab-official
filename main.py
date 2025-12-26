@@ -7,100 +7,87 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google.auth.transport.requests import Request
 
-# 1. הגדרות וחיבור ל-Secrets מה-GitHub Actions
+# הגדרות Secrets
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
 CLIENT_SECRET_RAW = os.environ.get("CLIENT_SECRET_JSON")
 REFRESH_TOKEN = os.environ.get("YOUTUBE_REFRESH_TOKEN")
 
-# הגדרת Gemini - עברנו ל-Flash כדי למנוע שגיאות 404
+# הגדרת Gemini - תיקון לגרסה יציבה
 genai.configure(api_key=GEMINI_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
-def get_ai_content():
-    print("🤖 פונה ל-Gemini לקבלת תוכן...")
+def get_viral_content():
+    print("🤖 מייצר תוכן ויראלי עם Gemini...")
     try:
-        prompt = "Create a powerful 7-word hook about Social Intelligence for a YouTube Short. No emojis."
+        # ביקשנו מה-AI לייצר גם משפט לסרטון וגם תיאור מתאים
+        prompt = (
+            "Create a provocative 7-word hook about social intelligence or human psychology "
+            "for a YouTube Short. Also, write a short 2-line description for the video. "
+            "Format: Hook | Description. No emojis."
+        )
         response = model.generate_content(prompt)
-        text = response.text.strip().replace('"', '')
-        print(f"✅ תוכן שנוצר: {text}")
-        return text
+        content = response.text.strip().split('|')
+        
+        hook = content[0].strip().replace('"', '')
+        description = content[1].strip() if len(content) > 1 else "Exploring the secrets of social intelligence."
+        
+        print(f"✅ משפט שנבחר: {hook}")
+        return hook, description
     except Exception as e:
-        print(f"⚠️ שגיאה ב-Gemini: {e}")
-        return "Master Your Social Intelligence"
+        print(f"⚠️ שגיאה ב-AI: {e}")
+        return "The psychological trick to win any argument", "Mastering social intelligence for better connections."
 
 def create_video():
-    text = get_ai_content()
-    # מוגדר ל-25 FPS בדיוק כפי שאתה מצלם
-    fps = 25 
-    duration = 5 
+    hook_text, description = get_viral_content()
+    fps = 25 # שמירה על הסטנדרט שלך [cite: 2025-12-23]
+    duration = 5
     
     print(f"🎬 מרנדר וידאו ב-{fps} FPS...")
     
-    # רקע כהה לסרטון
-    background = ColorClip(size=(1080, 1920), color=(20, 20, 20)).set_duration(duration)
+    # רקע זמני (עד שנוסיף תמונות)
+    bg = ColorClip(size=(1080, 1920), color=(20, 20, 20)).set_duration(duration)
     
-    # יצירת הטקסט במרכז המסך
-    txt_clip = TextClip(text, fontsize=80, color='white', font='Arial-Bold', 
-                        method='caption', size=(900, None)).set_duration(duration)
-    txt_clip = txt_clip.set_position('center')
-    
-    video = CompositeVideoClip([background, txt_clip])
-    video.fps = fps
-    
-    output_file = "final_video.mp4"
-    # רינדור בפורמט שיוטיוב אוהב
-    video.write_videofile(output_file, fps=fps, codec="libx264", audio=False)
-    return output_file, text
+    # טקסט משופר
+    txt = TextClip(hook_text, fontsize=85, color='white', font='Arial-Bold',
+                   method='caption', size=(950, None)).set_duration(duration)
+    txt = txt.set_position('center')
 
-def upload_to_youtube(file_path, title):
-    print("🚀 מתחבר ל-YouTube API להעלאת הסרטון...")
+    video = CompositeVideoClip([bg, txt])
+    video.fps = fps
+
+    output = "final_shorts.mp4"
+    video.write_videofile(output, fps=fps, codec="libx264", audio=False)
+    return output, hook_text, description
+
+def upload_to_youtube(file_path, title, description):
+    print("🚀 מעלה ליוטיוב עם תיאור מותאם...")
     try:
         client_config = json.loads(CLIENT_SECRET_RAW)
-        # זיהוי אם זה קובץ מ-OAuth Desktop או Web
         creds_data = client_config.get('installed') or client_config.get('web')
-        
-        creds = Credentials(
-            token=None,
-            refresh_token=REFRESH_TOKEN,
-            token_uri="https://oauth2.googleapis.com/token",
-            client_id=creds_data['client_id'],
-            client_secret=creds_data['client_secret']
-        )
-        
-        # רענון הגישה ליוטיוב
+        creds = Credentials(token=None, refresh_token=REFRESH_TOKEN, 
+                            token_uri="https://oauth2.googleapis.com/token",
+                            client_id=creds_data['client_id'], client_secret=creds_data['client_secret'])
         creds.refresh(Request())
-        
         youtube = build("youtube", "v3", credentials=creds)
         
-        request_body = {
+        body = {
             "snippet": {
-                "title": title[:100],
-                "description": "Daily AI Generated Short #shorts #socialintelligence",
-                "categoryId": "27" 
+                "title": title[:100], 
+                "description": description + "\n\n#shorts #psychology #socialintelligence", 
+                "categoryId": "27"
             },
-            "status": {
-                "privacyStatus": "public", 
-                "selfDeclaredMadeForKids": False
-            }
+            "status": {"privacyStatus": "public", "selfDeclaredMadeForKids": False}
         }
         
         media = MediaFileUpload(file_path, chunksize=-1, resumable=True)
-        upload = youtube.videos().insert(part="snippet,status", body=request_body, media_body=media)
-        
-        print("📤 מעלה קובץ...")
-        response = upload.execute()
-        print(f"✅ הצלחה! הסרטון עלה לערוץ. ID: {response.get('id')}")
-        
+        youtube.videos().insert(part="snippet,status", body=body, media_body=media).execute()
+        print("✅ הסרטון עלה בהצלחה!")
     except Exception as e:
-        print(f"❌ שגיאה בתהליך ההעלאה: {e}")
+        print(f"❌ שגיאה בהעלאה: {e}")
 
-# השורה שתיקנתי כדי למנוע את ה-SyntaxError
 if __name__ == "__main__":
-    print("🚀 הבוט יצא לדרך!")
-    # בדיקה שכל הנתונים קיימים
-    if not all([GEMINI_KEY, CLIENT_SECRET_RAW, REFRESH_TOKEN]):
-        print("❌ חסרים Secrets בהגדרות ה-GitHub (Settings > Secrets)!")
+    if all([GEMINI_KEY, REFRESH_TOKEN, CLIENT_SECRET_RAW]):
+        file, hook, desc = create_video()
+        upload_to_youtube(file, hook, desc)
     else:
-        video_file, ai_text = create_video()
-        upload_to_youtube(video_file, ai_text)
-        print("🏁 הבוט סיים את העבודה היומית.")
+        print("❌ חסרים Secrets!")
