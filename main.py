@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import random
 import google.generativeai as genai
 from moviepy.editor import TextClip, ColorClip, CompositeVideoClip, AudioFileClip, ImageClip
 from google.oauth2.credentials import Credentials
@@ -8,74 +9,77 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google.auth.transport.requests import Request
 
-# 1. הגדרות וחיבור ל-Secrets (הכל מוגדר אצלך ב-GitHub)
+# 1. חיבור ל-Secrets
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
 UNSPLASH_KEY = os.environ.get("UNSPLASH_ACCESS_KEY")
 CLIENT_SECRET_RAW = os.environ.get("CLIENT_SECRET_JSON")
 REFRESH_TOKEN = os.environ.get("YOUTUBE_REFRESH_TOKEN")
 
-# הקישור המדויק שלך ל-GUMROAD
 GUMROAD_LINK = "https://thebrainlabofficial.gumroad.com/l/vioono"
 
-# הגדרת Gemini - שימוש במודל יציב למניעת שגיאות 404 [cite: 2025-12-26]
 genai.configure(api_key=GEMINI_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 def get_viral_content():
-    print("🤖 מייצר תוכן ויראלי עם Gemini...")
+    # הוספת רשימת נושאים כדי לגוון את התוכן בכל יום [cite: 2025-12-20]
+    topics = [
+        "body language secrets", "active listening", "emotional regulation", 
+        "persuasion techniques", "building instant rapport", "social cues",
+        "charismatic speaking", "conflict resolution", "empathy in leadership"
+    ]
+    selected_topic = random.choice(topics)
+    
+    print(f"🤖 מייצר תוכן על נושא: {selected_topic}...")
     try:
+        # הוספנו הוראה ל-AI להיות ייחודי ושונה מהקודם
         prompt = (
-            "Create a viral 7-word hook about Social Intelligence (EQ) for a YouTube Short. "
-            "Also, write a short 2-line description. "
+            f"Write a unique, viral 7-word hook about {selected_topic} specifically. "
+            "Make it punchy and surprising. Also, write a 2-line YouTube description. "
             "Format: Hook: [text] | Description: [text]. No emojis."
         )
         response = model.generate_content(prompt)
         raw = response.text.strip().split("|")
         hook = raw[0].replace("Hook:", "").strip().replace('"', '')
         desc = raw[1].replace("Description:", "").strip() if len(raw) > 1 else "Master your social skills."
-        return hook, desc
+        return hook, desc, selected_topic
     except Exception as e:
         print(f"⚠️ שגיאה ב-AI: {e}")
-        return "Listening is the ultimate social power move", "Learn why master communicators focus on listening more than speaking."
+        return "Your silence is your loudest social weapon", "Learn the power of strategic silence in communication.", "silence"
 
-def get_background_image():
-    print("🖼️ מוריד תמונה מ-Unsplash...")
+def get_background_image(query):
+    print(f"🖼️ מוריד תמונה מ-Unsplash עבור: {query}")
     try:
-        url = f"https://api.unsplash.com/photos/random?query=minimalist,psychology&orientation=portrait&client_id={UNSPLASH_KEY}"
+        # התמונה עכשיו תתאים לנושא הספציפי שה-AI בחר
+        url = f"https://api.unsplash.com/photos/random?query={query},minimalist&orientation=portrait&client_id={UNSPLASH_KEY}"
         res = requests.get(url).json()
         img_url = res['urls']['regular']
         with open("bg.jpg", 'wb') as f:
             f.write(requests.get(img_url).content)
         return "bg.jpg"
-    except Exception as e:
-        print(f"⚠️ שגיאה בתמונה: {e}")
+    except:
         return None
 
 def create_video():
-    hook, desc = get_viral_content()
-    # הגדרת 25 FPS לפי דרישתך [cite: 2025-12-23]
-    fps = 25 
+    hook, desc, topic = get_viral_content()
+    fps = 25 # מוגדר ל-25 FPS כפי שביקשת [cite: 2025-12-23]
     duration = 6
     
-    print(f"🎬 מרנדר ב-{fps} FPS...")
+    print(f"🎬 מרנדר וידאו ב-{fps} FPS...")
     
-    bg_file = get_background_image()
+    bg_file = get_background_image(topic)
     if bg_file:
         bg = ImageClip(bg_file).set_duration(duration).resize(height=1920)
         bg = bg.crop(x1=bg.w/2-540, y1=0, x2=bg.w/2+540, y2=1920)
     else:
         bg = ColorClip(size=(1080, 1920), color=(20, 20, 20)).set_duration(duration)
 
-    # יצירת טקסט - תיקון שגיאות התחביר הקודמות
     txt = TextClip(hook, fontsize=90, color='white', font='Arial-Bold', method='caption', size=(900, None)).set_duration(duration).set_position('center')
 
     video = CompositeVideoClip([bg, txt])
     video.fps = fps
 
-    # שילוב המוזיקה מהתיקייה שלך
     audio_file = "Resolution - Wayne Jones.mp3"
     if os.path.exists(audio_file):
-        print("🎵 מוסיף מוזיקת רקע...")
         audio = AudioFileClip(audio_file).set_duration(duration)
         video = video.set_audio(audio)
 
@@ -83,8 +87,8 @@ def create_video():
     video.write_videofile(output, fps=fps, codec="libx264", audio_codec="aac")
     return output, hook, desc
 
-def upload_to_youtube(file_path, title, description):
-    print("🚀 מעלה ליוטיוב ומוסיף תיאור ותגובה...")
+def upload_and_pin(file_path, title, description):
+    print("🚀 מעלה ליוטיוב...")
     try:
         client_config = json.loads(CLIENT_SECRET_RAW)
         creds_data = client_config.get('installed') or client_config.get('web')
@@ -94,7 +98,6 @@ def upload_to_youtube(file_path, title, description):
         creds.refresh(Request())
         youtube = build("youtube", "v3", credentials=creds)
         
-        # העלאת הסרטון [cite: 2025-12-20]
         body = {
             "snippet": {
                 "title": title[:100], 
@@ -106,9 +109,9 @@ def upload_to_youtube(file_path, title, description):
         media = MediaFileUpload(file_path, chunksize=-1, resumable=True)
         response = youtube.videos().insert(part="snippet,status", body=body, media_body=media).execute()
         video_id = response.get('id')
-        print(f"✅ הסרטון עלה! ID: {video_id}")
+        print(f"✅ עלה! ID: {video_id}")
 
-        # הוספת תגובה עם הקישור ל-Gumroad
+        # הוספת תגובה נעוצה
         comment_body = {
             "snippet": {
                 "videoId": video_id,
@@ -116,16 +119,13 @@ def upload_to_youtube(file_path, title, description):
             }
         }
         youtube.commentThreads().insert(part="snippet", body=comment_body).execute()
-        print("💬 תגובה נעוצה נוספה בהצלחה!")
+        print("💬 תגובה נוספה בהצלחה!")
         
     except Exception as e:
-        print(f"❌ שגיאה בהעלאה או בתגובה: {e}")
+        print(f"❌ שגיאה: {e}")
 
 if __name__ == "__main__":
-    print("🚀 הבוט יצא לדרך!")
-    if all([GEMINI_KEY, UNSPLASH_KEY, REFRESH_TOKEN, CLIENT_SECRET_RAW]):
+    if all([GEMINI_KEY, REFRESH_TOKEN, CLIENT_SECRET_RAW]):
         file, hook, desc = create_video()
-        upload_to_youtube(file, hook, desc)
-        print("✨ העבודה הסתיימה בהצלחה!")
-    else:
-        print("❌ חסרים Secrets בהגדרות ה-GitHub!")
+        upload_and_pin(file, hook, desc)
+        print("✨ עבודה הושלמה עם גיוון תוכן!")
