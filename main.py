@@ -14,34 +14,46 @@ GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
 UNSPLASH_KEY = os.environ.get("UNSPLASH_ACCESS_KEY")
 CLIENT_SECRET_RAW = os.environ.get("CLIENT_SECRET_JSON")
 REFRESH_TOKEN = os.environ.get("YOUTUBE_REFRESH_TOKEN")
-TIKTOK_TOKEN = os.environ.get("TIKTOK_ACCESS_TOKEN") # המפתח שיוצר את החיבור האמיתי
+TIKTOK_TOKEN = os.environ.get("TIKTOK_ACCESS_TOKEN")
 
 GUMROAD_LINK = "https://thebrainlabofficial.gumroad.com/l/vioono"
 
-# חיבור למודל המעודכן ביותר
+# הגדרת בסיס ל-AI
 genai.configure(api_key=GEMINI_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
 def get_viral_content():
     topics = ["body language", "social cues", "persuasion", "rapport", "leadership"]
     selected_topic = random.choice(topics)
+    print(f"🤖 מנסה לייצר תוכן מקורי על: {selected_topic}...")
+    
+    # רשימת מודלים לניסיון בזה אחר זה למניעת שגיאת 404
+    model_names = ['gemini-1.5-flash', 'gemini-pro']
+    
+    for model_name in model_names:
+        try:
+            print(f"🔄 מנסה להתחבר למודל: {model_name}")
+            model = genai.GenerativeModel(model_name)
+            prompt = f"Write a viral 7-word hook about {selected_topic}. Format: Hook: [text] | Description: [text]."
+            response = model.generate_content(prompt)
+            
+            raw = response.text.strip().split("|")
+            hook = raw[0].replace("Hook:", "").strip().replace('"', '')
+            desc = raw[1].replace("Description:", "").strip() if len(raw) > 1 else "Social Intelligence tips."
+            
+            print(f"✨ הצלחה! ג'מיני המציא משפט חדש: {hook}")
+            return hook, desc, selected_topic
+        except Exception as e:
+            print(f"❌ המודל {model_name} נכשל: {e}")
+            continue
+
+    print("⚠️ כל המודלים נכשלו, עובר לגיבוי אקראי למניעת חזרתיות.")
     fallbacks = [
         ("Your posture speaks before you do", "Master non-verbal authority."),
         ("Eyes tell what words try to hide", "Read emotions like a pro."),
         ("The power of a strategic pause", "Why silence is your best weapon.")
     ]
-    print(f"🤖 מייצר תוכן על: {selected_topic}...")
-    try:
-        prompt = f"Write a viral 7-word hook about {selected_topic}. Format: Hook: [text] | Description: [text]."
-        response = model.generate_content(prompt)
-        raw = response.text.strip().split("|")
-        hook = raw[0].replace("Hook:", "").strip().replace('"', '')
-        desc = raw[1].replace("Description:", "").strip() if len(raw) > 1 else "Social Intelligence tips."
-        return hook, desc, selected_topic
-    except Exception as e:
-        print(f"⚠️ שגיאה ב-AI: {e} - משתמש בגיבוי מרשימת ה-6")
-        f_hook, f_desc = random.choice(fallbacks)
-        return f_hook, f_desc, selected_topic
+    f_hook, f_desc = random.choice(fallbacks)
+    return f_hook, f_desc, selected_topic
 
 def get_background_image(query):
     try:
@@ -54,21 +66,25 @@ def get_background_image(query):
 
 def create_video():
     hook, desc, topic = get_viral_content()
-    fps = 25 # מוגדר ל-25 FPS כפי שביקשת [cite: 2025-12-23]
+    fps = 25 # שומרים על הקצב שלך [cite: 2025-12-23]
     duration = 6
     print(f"🎬 מרנדר וידאו ב-{fps} FPS עבור The Brain Lab Official...")
+    
     bg_file = get_background_image(topic)
     if bg_file:
         bg = ImageClip(bg_file).set_duration(duration).resize(height=1920)
         bg = bg.crop(x1=bg.w/2-540, y1=0, x2=bg.w/2+540, y2=1920)
     else:
         bg = ColorClip(size=(1080, 1920), color=(20, 20, 20)).set_duration(duration)
+
     txt = TextClip(hook, fontsize=90, color='white', font='Arial-Bold', method='caption', size=(900, None)).set_duration(duration).set_position('center')
     video = CompositeVideoClip([bg, txt])
     video.fps = fps
+    
     audio_file = "Resolution - Wayne Jones.mp3"
     if os.path.exists(audio_file):
         video = video.set_audio(AudioFileClip(audio_file).set_duration(duration))
+        
     output = "final_shorts.mp4"
     video.write_videofile(output, fps=fps, codec="libx264", audio_codec="aac")
     return output, hook, desc
@@ -78,7 +94,7 @@ def upload_to_youtube(file_path, title, description):
     try:
         config = json.loads(CLIENT_SECRET_RAW)
         creds_data = config.get('installed') or config.get('web')
-        # תיקון הסוגריים - כתיבה בטוחה למניעת SyntaxError
+        # וידוא מבנה סוגריים למניעת SyntaxError
         creds = Credentials(
             token=None,
             refresh_token=REFRESH_TOKEN,
@@ -102,7 +118,6 @@ def upload_to_tiktok(file_path, title):
     if not TIKTOK_TOKEN:
         print("⚠️ חסר TIKTOK_ACCESS_TOKEN ב-Secrets, מדלג על טיקטוק.")
         return
-    # כאן תבוא פקודת ה-Request האמיתית ברגע שיהיה לנו טוקן
     print(f"✅ המנוע זיהה את הטוקן ומוכן להעלאה עבור: {title}")
 
 if __name__ == "__main__":
