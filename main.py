@@ -9,17 +9,17 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google.auth.transport.requests import Request
 
-# 1. חיבור ל-Secrets (הוספנו את טיקטוק)
+# 1. הגדרות וחיבור ל-Secrets
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
 UNSPLASH_KEY = os.environ.get("UNSPLASH_ACCESS_KEY")
 CLIENT_SECRET_RAW = os.environ.get("CLIENT_SECRET_JSON")
 REFRESH_TOKEN = os.environ.get("YOUTUBE_REFRESH_TOKEN")
-# מפתחות טיקטוק החדשים
 TIKTOK_KEY = os.environ.get("TIKTOK_CLIENT_KEY")
 TIKTOK_SECRET = os.environ.get("TIKTOK_CLIENT_SECRET")
 
 GUMROAD_LINK = "https://thebrainlabofficial.gumroad.com/l/vioono"
 
+# תיקון המודל לגרסה היציבה ביותר
 genai.configure(api_key=GEMINI_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
@@ -30,7 +30,18 @@ def get_viral_content():
         "charismatic speaking", "conflict resolution", "empathy in leadership"
     ]
     selected_topic = random.choice(topics)
-    print(f"🤖 מייצר תוכן על נושא: {selected_topic}...")
+    
+    # רשימת גיבוי אקראית למקרה שג'מיני נכשל - שלא יחזור על עצמו
+    fallbacks = [
+        ("Your posture speaks before you do", "Master the art of non-verbal authority."),
+        ("Eyes tell what words try to hide", "How to read emotions like a pro."),
+        ("The power of a strategic pause", "Why silence is often your best response."),
+        ("Small talk leads to big doors", "Networking secrets for the socially smart."),
+        ("Master the art of the subtle nod", "Show engagement without saying a word."),
+        ("Mirrored movements build trust fast", "Use psychology to connect instantly.")
+    ]
+    
+    print(f"🤖 מייצר תוכן חדש על: {selected_topic}...")
     try:
         prompt = (
             f"Write a unique, viral 7-word hook about {selected_topic} specifically. "
@@ -43,8 +54,9 @@ def get_viral_content():
         desc = raw[1].replace("Description:", "").strip() if len(raw) > 1 else "Master your social skills."
         return hook, desc, selected_topic
     except Exception as e:
-        print(f"⚠️ שגיאה ב-AI: {e}")
-        return "Your silence is your loudest social weapon", "Learn the power of strategic silence in communication.", "silence"
+        print(f"⚠️ שגיאה ב-AI: {e} - משתמש בגיבוי אקראי למניעת כפילות")
+        f_hook, f_desc = random.choice(fallbacks)
+        return f_hook, f_desc, selected_topic
 
 def get_background_image(query):
     print(f"🖼️ מוריד תמונה מ-Unsplash עבור: {query}")
@@ -60,7 +72,7 @@ def get_background_image(query):
 
 def create_video():
     hook, desc, topic = get_viral_content()
-    fps = 25 # שומרים על 25 FPS כפי שביקשת [cite: 2025-12-23]
+    fps = 25 # שומרים על הקצב שלך
     duration = 6
     print(f"🎬 מרנדר וידאו ב-{fps} FPS עבור The Brain Lab Official...")
     
@@ -90,45 +102,4 @@ def upload_to_youtube(file_path, title, description):
     try:
         client_config = json.loads(CLIENT_SECRET_RAW)
         creds_data = client_config.get('installed') or client_config.get('web')
-        creds = Credentials(token=None, refresh_token=REFRESH_TOKEN, 
-                            token_uri="https://oauth2.googleapis.com/token",
-                            client_id=creds_data['client_id'], client_secret=creds_data['client_secret'])
-        creds.refresh(Request())
-        youtube = build("youtube", "v3", credentials=creds)
-        
-        body = {
-            "snippet": {
-                "title": title[:100], 
-                "description": description + f"\n\nGet the masterclass here: {GUMROAD_LINK}\n\n#shorts #socialintelligence", 
-                "categoryId": "27"
-            },
-            "status": {"privacyStatus": "public", "selfDeclaredMadeForKids": False}
-        }
-        media = MediaFileUpload(file_path, chunksize=-1, resumable=True)
-        response = youtube.videos().insert(part="snippet,status", body=body, media_body=media).execute()
-        print(f"✅ עלה ליוטיוב! ID: {response.get('id')}")
-    except Exception as e:
-        print(f"❌ שגיאה ביוטיוב: {e}")
-
-def upload_to_tiktok(file_path, title):
-    print("📱 שולח סרטון לטיקטוק (The Brain Lab Official)...")
-    if not TIKTOK_KEY or not TIKTOK_SECRET:
-        print("⚠️ מפתחות טיקטוק חסרים, מדלג...")
-        return
-    
-    try:
-        # פונקציית העלאה ראשונית לטיקטוק - שליחה כ-Draft
-        # מכיוון שאנחנו ב-Sandbox, הסרטון יופיע ב-Inbox שלך בטיקטוק לאישור
-        print(f"✅ הסרטון '{title}' נשלח בהצלחה לטיקטוק כטיוטה!")
-    except Exception as e:
-        print(f"❌ שגיאה בטיקטוק: {e}")
-
-if __name__ == "__main__":
-    if all([GEMINI_KEY, REFRESH_TOKEN, CLIENT_SECRET_RAW]):
-        file, hook, desc = create_video()
-        
-        # העלאה לכל הפלטפורמות [cite: 2025-12-20]
-        upload_to_youtube(file, hook, desc)
-        upload_to_tiktok(file, hook)
-        
-        print("✨ עבודה הושלמה! הסרטון באוויר ב-25fps.")
+        creds = Credentials(token=None, refresh_token=REFRESH_TOKEN,
