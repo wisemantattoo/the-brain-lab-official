@@ -21,7 +21,7 @@ GUMROAD_LINK = "https://thebrainlabofficial.gumroad.com/l/vioono"
 
 # חיבור למודל המעודכן ביותר למניעת שגיאת 404
 genai.configure(api_key=GEMINI_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
 def get_viral_content():
     topics = ["body language", "social cues", "persuasion", "rapport", "leadership"]
