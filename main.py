@@ -7,60 +7,68 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google.auth.transport.requests import Request
 
-# הגדרות Secrets
+# 1. חיבור ל-Secrets
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
 CLIENT_SECRET_RAW = os.environ.get("CLIENT_SECRET_JSON")
 REFRESH_TOKEN = os.environ.get("YOUTUBE_REFRESH_TOKEN")
 
-# הגדרת Gemini - תיקון לגרסה יציבה
+# הגדרת Gemini - ניסיון לפתור את שגיאת ה-404 עם שם מודל מפורש
 genai.configure(api_key=GEMINI_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+# שימוש במודל היציב ביותר כרגע
+model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
-def get_viral_content():
-    print("🤖 מייצר תוכן ויראלי עם Gemini...")
+def get_real_content():
+    print("🤖 מנסה לייצר תוכן אמיתי על אינטליגנציה חברתית...")
     try:
-        # ביקשנו מה-AI לייצר גם משפט לסרטון וגם תיאור מתאים
+        # פרומפט ממוקד מאוד כדי שלא נקבל זבל
         prompt = (
-            "Create a provocative 7-word hook about social intelligence or human psychology "
-            "for a YouTube Short. Also, write a short 2-line description for the video. "
-            "Format: Hook | Description. No emojis."
+            "Write a mind-blowing, viral 7-word tip about Social Intelligence (EQ) for a YouTube Short. "
+            "Also, write a 2-sentence engaging description for YouTube. "
+            "Format: Hook: [text] | Description: [text]. Use NO emojis."
         )
         response = model.generate_content(prompt)
-        content = response.text.strip().split('|')
+        raw_text = response.text.strip()
         
-        hook = content[0].strip().replace('"', '')
-        description = content[1].strip() if len(content) > 1 else "Exploring the secrets of social intelligence."
-        
-        print(f"✅ משפט שנבחר: {hook}")
+        # פירוק התוכן שחזר
+        if "|" in raw_text:
+            parts = raw_text.split("|")
+            hook = parts[0].replace("Hook:", "").strip().replace('"', '')
+            description = parts[1].replace("Description:", "").strip()
+        else:
+            hook = raw_text[:70].replace('"', '')
+            description = "Deep dive into social intelligence secrets."
+            
+        print(f"✅ תוכן שנוצר: {hook}")
         return hook, description
     except Exception as e:
-        print(f"⚠️ שגיאה ב-AI: {e}")
-        return "The psychological trick to win any argument", "Mastering social intelligence for better connections."
+        print(f"❌ Gemini נכשל שוב: {e}")
+        # גיבוי איכותי יותר אם ה-AI קורס
+        return "Listening is the ultimate social power move", "Learn why master communicators focus on listening more than speaking."
 
 def create_video():
-    hook_text, description = get_viral_content()
-    fps = 25 # שמירה על הסטנדרט שלך [cite: 2025-12-23]
+    hook_text, description = get_real_content()
+    fps = 25 # הסטנדרט שלך [cite: 2025-12-23]
     duration = 5
     
-    print(f"🎬 מרנדר וידאו ב-{fps} FPS...")
+    print(f"🎬 מרנדר ב-{fps} FPS...")
     
-    # רקע זמני (עד שנוסיף תמונות)
-    bg = ColorClip(size=(1080, 1920), color=(20, 20, 20)).set_duration(duration)
+    # רקע כהה נקי (עד שנוסיף תמונות)
+    bg = ColorClip(size=(1080, 1920), color=(15, 15, 15)).set_duration(duration)
     
-    # טקסט משופר
+    # טקסט בולט ומרכזי
     txt = TextClip(hook_text, fontsize=85, color='white', font='Arial-Bold',
-                   method='caption', size=(950, None)).set_duration(duration)
+                   method='caption', size=(900, None)).set_duration(duration)
     txt = txt.set_position('center')
 
     video = CompositeVideoClip([bg, txt])
     video.fps = fps
 
-    output = "final_shorts.mp4"
+    output = "final_video.mp4"
     video.write_videofile(output, fps=fps, codec="libx264", audio=False)
     return output, hook_text, description
 
-def upload_to_youtube(file_path, title, description):
-    print("🚀 מעלה ליוטיוב עם תיאור מותאם...")
+def upload_to_youtube(file_path, title, desc):
+    print("🚀 מעלה ליוטיוב...")
     try:
         client_config = json.loads(CLIENT_SECRET_RAW)
         creds_data = client_config.get('installed') or client_config.get('web')
@@ -73,7 +81,7 @@ def upload_to_youtube(file_path, title, description):
         body = {
             "snippet": {
                 "title": title[:100], 
-                "description": description + "\n\n#shorts #psychology #socialintelligence", 
+                "description": desc + "\n\n#shorts #socialintelligence #eq", 
                 "categoryId": "27"
             },
             "status": {"privacyStatus": "public", "selfDeclaredMadeForKids": False}
@@ -86,7 +94,7 @@ def upload_to_youtube(file_path, title, description):
         print(f"❌ שגיאה בהעלאה: {e}")
 
 if __name__ == "__main__":
-    if all([GEMINI_KEY, REFRESH_TOKEN, CLIENT_SECRET_RAW]):
+    if all([GEMINI_KEY, CLIENT_SECRET_RAW, REFRESH_TOKEN]):
         file, hook, desc = create_video()
         upload_to_youtube(file, hook, desc)
     else:
