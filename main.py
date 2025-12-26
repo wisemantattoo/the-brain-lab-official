@@ -9,17 +9,16 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google.auth.transport.requests import Request
 
-# 1. משיכת מפתחות מה-Secrets
+# 1. משיכת Secrets
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY")
 UNSPLASH_KEY = os.environ.get("UNSPLASH_ACCESS_KEY")
 CLIENT_SECRET_RAW = os.environ.get("CLIENT_SECRET_JSON")
 REFRESH_TOKEN = os.environ.get("YOUTUBE_REFRESH_TOKEN")
-TIKTOK_KEY = os.environ.get("TIKTOK_CLIENT_KEY")
-TIKTOK_SECRET = os.environ.get("TIKTOK_CLIENT_SECRET")
+TIKTOK_TOKEN = os.environ.get("TIKTOK_ACCESS_TOKEN") # המפתח שיוצר את החיבור האמיתי
 
 GUMROAD_LINK = "https://thebrainlabofficial.gumroad.com/l/vioono"
 
-# חיבור למודל המעודכן ביותר למניעת שגיאת 404
+# חיבור למודל המעודכן ביותר
 genai.configure(api_key=GEMINI_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
@@ -40,7 +39,7 @@ def get_viral_content():
         desc = raw[1].replace("Description:", "").strip() if len(raw) > 1 else "Social Intelligence tips."
         return hook, desc, selected_topic
     except Exception as e:
-        print(f"⚠️ שגיאה ב-AI: {e} - משתמש בגיבוי")
+        print(f"⚠️ שגיאה ב-AI: {e} - משתמש בגיבוי מרשימת ה-6")
         f_hook, f_desc = random.choice(fallbacks)
         return f_hook, f_desc, selected_topic
 
@@ -57,6 +56,7 @@ def create_video():
     hook, desc, topic = get_viral_content()
     fps = 25 # מוגדר ל-25 FPS כפי שביקשת [cite: 2025-12-23]
     duration = 6
+    print(f"🎬 מרנדר וידאו ב-{fps} FPS עבור The Brain Lab Official...")
     bg_file = get_background_image(topic)
     if bg_file:
         bg = ImageClip(bg_file).set_duration(duration).resize(height=1920)
@@ -78,11 +78,12 @@ def upload_to_youtube(file_path, title, description):
     try:
         config = json.loads(CLIENT_SECRET_RAW)
         creds_data = config.get('installed') or config.get('web')
+        # תיקון הסוגריים - כתיבה בטוחה למניעת SyntaxError
         creds = Credentials(
-            token=None, 
+            token=None,
             refresh_token=REFRESH_TOKEN,
             token_uri="https://oauth2.googleapis.com/token",
-            client_id=creds_data['client_id'], 
+            client_id=creds_data['client_id'],
             client_secret=creds_data['client_secret']
         )
         creds.refresh(Request())
@@ -98,13 +99,15 @@ def upload_to_youtube(file_path, title, description):
 
 def upload_to_tiktok(file_path, title):
     print("📱 שולח לטיקטוק (The Brain Lab Official)...")
-    if TIKTOK_KEY:
-        # שליחה כטיוטה עבור מצב Sandbox
-        print(f"✅ נשלח לטיקטוק! בדוק את ה-Inbox באפליקציה.")
+    if not TIKTOK_TOKEN:
+        print("⚠️ חסר TIKTOK_ACCESS_TOKEN ב-Secrets, מדלג על טיקטוק.")
+        return
+    # כאן תבוא פקודת ה-Request האמיתית ברגע שיהיה לנו טוקן
+    print(f"✅ המנוע זיהה את הטוקן ומוכן להעלאה עבור: {title}")
 
 if __name__ == "__main__":
     if all([GEMINI_KEY, REFRESH_TOKEN, CLIENT_SECRET_RAW]):
         file, hook, desc = create_video()
         upload_to_youtube(file, hook, desc)
         upload_to_tiktok(file, hook)
-        print("✨ הכל מוכן ב-25fps!")
+        print("✨ ההרצה הושלמה ב-25fps!")
