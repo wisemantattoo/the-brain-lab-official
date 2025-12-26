@@ -2,8 +2,8 @@ name: Daily Video Bot
 
 on:
   schedule:
-    - cron: '0 8 * * *' # רץ אוטומטית כל יום ב-8 בבוקר
-  workflow_dispatch:      # מאפשר לך להריץ ידנית מתי שבא לך
+    - cron: '0 8 * * *' # רץ כל יום ב-8 בבוקר UTC
+  workflow_dispatch:      # מאפשר הרצה ידנית
 
 jobs:
   build:
@@ -23,13 +23,13 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y imagemagick
-          # תיקון הרשאות עבור ImageMagick כדי שיוכל לעבד טקסט ותמונות
           sudo sed -i 's/policy domain="path" rights="none" pattern="@\*"/policy domain="path" rights="read|write" pattern="@\*"/g' /etc/ImageMagick-6/policy.xml
 
       - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client moviepy==1.0.3 requests Pillow==9.5.0
+          # הוספנו כאן את google-generativeai כדי לפתור את השגיאה
+          pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client moviepy==1.0.3 requests Pillow==9.5.0 google-generativeai
 
       - name: Run Bot
         env:
