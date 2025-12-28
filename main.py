@@ -18,9 +18,9 @@ REFRESH_TOKEN = os.environ.get("YOUTUBE_REFRESH_TOKEN")
 TIKTOK_TOKEN = os.environ.get("TIKTOK_ACCESS_TOKEN")
 GUMROAD_LINK = "https://thebrainlabofficial.gumroad.com/l/vioono"
 
+# שימוש במודל המנצח ששמור בזיכרון
 client = genai.Client(api_key=GEMINI_KEY)
 
-# תיאור רשמי קבוע (DNA)
 OFFICIAL_DESCRIPTION = """Welcome to The Brain Lab. 🧠
 We decode the human mind, one fact at a time. Our mission is to provide you with science-backed insights and actionable protocols to rewire your brain for success, focus, and peak performance.
 
@@ -31,28 +31,29 @@ We decode the human mind, one fact at a time. Our mission is to provide you with
 Subscribe to join the experiment and start decoding your mind."""
 
 def get_viral_content():
+    # נושאי מחקר עמוקים יותר [cite: 2025-12-28]
     topics = [
-        "prefrontal cortex optimization", "dark triad detection", 
-        "high-stakes negotiation neuro-tactics", "cognitive bias exploitation",
-        "micro-expression mastery", "dopamine baseline management"
+        "The Anchoring Effect in negotiation", "Dopamine reward prediction error", 
+        "Loss aversion psychology", "Micro-expressions of contempt",
+        "The Zeigarnik Effect on focus", "Neural pathways of social dominance"
     ]
     selected_topic = random.choice(topics)
-    print(f"🧠 ACTIVATING ELITE DNA PROTOCOL: {selected_topic}...")
+    print(f"🧠 ANALYZING TACTICAL PROTOCOL: {selected_topic}...")
 
-    # DNA מפורט ומחושב (Master Neuro-Strategist) [cite: 2025-12-28]
-    instruction = f"""
-    IDENTITY: You are the 'Lead Neuro-Strategist' at The Brain Lab Official. 
-    CORE MISSION: Decipher high-level psychology into actionable power protocols.
+    # DNA מעודכן: התמקדות בערך עובדתי (Micro-Lesson) [cite: 2025-12-28]
+    instruction = """
+    ROLE: You are the Lead Neuro-Strategist at The Brain Lab Official. 
+    MISSION: Deliver high-stakes psychological value. Do not market. Educate.
     
     STRICT OPERATIONAL RULES:
-    1. LANGUAGE: Respond ONLY in Elite Professional English. Hebrew is strictly forbidden.
-    2. TONE: Strategic, Cold, Intellectual, and Authoritative.
-    3. VALUE DENSITY: Maximize psychological value per word. No greetings. No fluff.
+    1. LANGUAGE: English only.
+    2. TACTICAL INSIGHT: Instead of a marketing 'Hook', provide one concrete, actionable psychological fact.
+    3. FACT DENSITY: The insight must be a 'Micro-Lesson' that gives the viewer an advantage.
     
-    OUTPUT FORMAT (MUST FOLLOW):
-    ANALYSIS: [3-4 sentences of deep strategic/neuroscience analysis of the topic]
-    ---TITLE: [Cinematic Title, 5-8 words, high CTR]
-    ---HOOK: [Exactly 7 high-impact words for the video screen]
+    FORMAT:
+    ANALYSIS: [Deep 3-sentence scientific breakdown]
+    ---TITLE: [Cinematic title for YouTube]
+    ---INSIGHT: [The tactical fact for the screen, 7-10 words maximum]
     """
     
     try:
@@ -60,32 +61,32 @@ def get_viral_content():
             model="gemini-flash-latest", 
             config=types.GenerateContentConfig(
                 system_instruction=instruction, 
-                temperature=0.7 # איזון בין יצירתיות לדיוק אסטרטגי
+                temperature=0.7
             ),
-            contents=f"Conduct a high-stakes intelligence analysis on: {selected_topic}"
+            contents=f"Extract a tactical psychological protocol from the topic: {selected_topic}"
         )
         
         full_text = response.text.strip()
-        print(f"\n--- DEEP STRATEGIC ANALYSIS ---\n{full_text}\n-------------------------------")
+        print(f"\n--- LAB ANALYSIS ---\n{full_text}\n-------------------")
         
-        # חילוץ מחושב של חלקי התוכן
-        title = full_text.split("---TITLE:")[1].split("---HOOK:")[0].strip() if "---TITLE:" in full_text else "Strategic Brain Protocol"
-        hook = full_text.split("---HOOK:")[1].strip() if "---HOOK:" in full_text else "Master your neural baseline for peak focus"
+        # חילוץ חכם של התובנה הטקטית
+        title = full_text.split("---TITLE:")[1].split("---INSIGHT:")[0].strip() if "---TITLE:" in full_text else "Neuro-Strategy"
+        insight = full_text.split("---INSIGHT:")[1].strip() if "---INSIGHT:" in full_text else "Master your neural baseline for focus"
         
-        # בדיקה עצמית: זיקוק ל-7 מילים בדיוק למניעת קריסה
-        final_hook = " ".join(hook.split()[:7]).upper()
+        # ניקוי וזיקוק לוידאו [cite: 2025-12-28]
+        final_insight = " ".join(insight.split()[:10]).upper()
         final_title = " ".join(title.split()[:10])
 
-        print(f"✨ NEURO-STRATEGY READY: {final_hook}")
-        return final_hook, final_title, selected_topic
+        print(f"✨ TACTICAL INSIGHT READY: {final_insight}")
+        return final_insight, final_title, selected_topic
     
     except Exception as e:
         print(f"❌ PROTOCOL ERROR: {e}")
-        return "REWIRE YOUR BRAIN FOR ABSOLUTE FOCUS", "Neural Optimization", selected_topic
+        return "LOSS AVERSION: WE FEAR LOSS MORE THAN GAIN", "Brain Economics", selected_topic
 
 def get_background_image(query):
     try:
-        url = f"https://api.unsplash.com/photos/random?query={query},science,lab,minimalist&orientation=portrait&client_id={UNSPLASH_KEY}"
+        url = f"https://api.unsplash.com/photos/random?query={query},minimalist,intelligence&orientation=portrait&client_id={UNSPLASH_KEY}"
         res = requests.get(url).json()
         img_url = res['urls']['regular']
         with open("bg.jpg", 'wb') as f: f.write(requests.get(img_url).content)
@@ -93,10 +94,10 @@ def get_background_image(query):
     except: return None
 
 def create_video():
-    hook, title, topic = get_viral_content()
+    insight, title, topic = get_viral_content()
     fps = 25 
-    duration = 7
-    print(f"🎬 RENDERING 25 FPS NEURO-VISUAL...")
+    duration = 8 # הגדלתי מעט כדי לתת זמן לקרוא את העובדה
+    print(f"🎬 RENDERING TACTICAL SHORT...")
     
     bg_file = get_background_image(topic)
     if bg_file:
@@ -105,8 +106,8 @@ def create_video():
     else:
         bg = ColorClip(size=(1080, 1920), color=(15, 15, 15)).set_duration(duration)
 
-    # עיצוב טקסט "מעבדתי" נקי [cite: 2025-12-28]
-    txt = TextClip(hook, fontsize=70, color='white', font='Arial-Bold', method='caption', size=(900, None)).set_duration(duration).set_position('center')
+    # טקסט "מעבדתי" קריא ומרכזי [cite: 2025-12-28]
+    txt = TextClip(insight, fontsize=65, color='white', font='Arial-Bold', method='caption', size=(950, None)).set_duration(duration).set_position('center')
     video = CompositeVideoClip([bg, txt])
     video.fps = fps
     
@@ -116,10 +117,10 @@ def create_video():
         
     output = "final_shorts.mp4"
     video.write_videofile(output, fps=fps, codec="libx264", audio_codec="aac")
-    return output, hook, title
+    return output, insight, title
 
-def upload_to_youtube(file_path, hook, title):
-    print("🚀 UPLOADING TO LABORATORY DATABASE (YouTube)...")
+def upload_to_youtube(file_path, insight, title):
+    print("🚀 UPLOADING PROTOCOL...")
     try:
         config = json.loads(CLIENT_SECRET_RAW)
         creds_data = config.get('installed') or config.get('web')
@@ -130,7 +131,7 @@ def upload_to_youtube(file_path, hook, title):
         creds.refresh(Request())
         youtube = build("youtube", "v3", credentials=creds)
         
-        full_desc = f"{title}\n\n{OFFICIAL_DESCRIPTION}" # שילוב ה-DNA המפורט [cite: 2025-12-28]
+        full_desc = f"{title}\n\n{OFFICIAL_DESCRIPTION}"
         
         body = {
             "snippet": {"title": title, "description": full_desc, "categoryId": "27"},
@@ -143,6 +144,6 @@ def upload_to_youtube(file_path, hook, title):
 
 if __name__ == "__main__":
     if all([GEMINI_KEY, REFRESH_TOKEN, CLIENT_SECRET_RAW]):
-        file, hook, title = create_video()
-        upload_to_youtube(file, hook, title)
-        print("✨ LAB PROTOCOL COMPLETE.")
+        file, insight, title = create_video()
+        upload_to_youtube(file, insight, title)
+        print("✨ TACTICAL UNIT COMPLETE.")
