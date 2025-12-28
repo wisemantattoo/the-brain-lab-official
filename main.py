@@ -126,8 +126,10 @@ def upload_to_tiktok(file_path, title):
     print(f"✅ מנוע הטיקטוק מוכן להעלאה עבור: {title}")
 
 if __name__ == "__main__":
-    if all([GEMINI_KEY, REFRESH_TOKEN, CLIENT_SECRET_RAW]):
-        file, hook, desc = create_video()
-        upload_to_youtube(file, hook, desc)
-        upload_to_tiktok(file, hook)
-        print("✨ ההרצה הושלמה ב-25fps!")
+    print("🔍 בודק אילו מודלים זמינים למפתח שלך...")
+    try:
+        models = client.models.list()
+        for m in models:
+            print(f"-> מודל זמין: {m.name}")
+    except Exception as e:
+        print(f"❌ שגיאה בקבלת רשימת מודלים: {e}")
