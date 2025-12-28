@@ -24,14 +24,14 @@ genai.configure(api_key=GEMINI_KEY)
 def get_viral_content():
     topics = ["body language", "social cues", "persuasion", "rapport", "leadership"]
     selected_topic = random.choice(topics)
-    print(f"🤖 מנסה לייצר תוכן מקורי על: {selected_topic}...")
+    print(f"🤖 המוח של המעבדה מתחיל לחשוב על: {selected_topic}...")
     
-    # רשימת מודלים לניסיון בזה אחר זה למניעת שגיאת 404
-    model_names = ['gemini-1.5-flash', 'gemini-pro']
+    # עדכון שמות המודלים לפי הרשימה המורשת שקיבלנו מהבדיקה
+    model_names = ['models/gemini-2.5-flash', 'models/gemini-2.0-flash', 'models/gemini-flash-latest']
     
     for model_name in model_names:
         try:
-            print(f"🔄 מנסה להתחבר למודל: {model_name}")
+            print(f"🔄 מנסה להתחבר למודל המורשה: {model_name}")
             model = genai.GenerativeModel(model_name)
             prompt = f"Write a viral 7-word hook about {selected_topic}. Format: Hook: [text] | Description: [text]."
             response = model.generate_content(prompt)
@@ -94,7 +94,6 @@ def upload_to_youtube(file_path, title, description):
     try:
         config = json.loads(CLIENT_SECRET_RAW)
         creds_data = config.get('installed') or config.get('web')
-        # וידוא מבנה סוגריים למניעת SyntaxError
         creds = Credentials(
             token=None,
             refresh_token=REFRESH_TOKEN,
