@@ -24,14 +24,18 @@ client = genai.Client(api_key=GEMINI_KEY)
 def get_viral_content():
     topics = ["body language", "social cues", "persuasion", "rapport", "leadership"]
     selected_topic = random.choice(topics)
-    print(f"🧠 מפעיל מודל חשיבה (Gemini Flash Latest) על: {selected_topic}...")
+    print(f"🧠 מפעיל מודל חשיבה אסטרטגית על: {selected_topic}...")
     
+    # הנחיות חדשות המפרידות בין ניתוח לתוצאה סופית [cite: 2025-12-28]
     instruction = """
     אתה המוח האסטרטגי מאחורי 'The Brain Lab Official'. 
-    לפני כתיבת התסריט, בצע ניתוח מהיר:
-    1. מהו הטריגר הפסיכולוגי שיגרום לאנשים לעצור?
-    2. איך להעביר ערך מקסימלי ב-7 מילים בלבד?
-    פורמט תשובה: Hook: [טקסט] | Description: [טקסט]
+    בצע ניתוח פסיכולוגי עמוק על הנושא שנבחר.
+    בסוף הניתוח, ספק הוק ויראלי בן 7 מילים בדיוק.
+    
+    חובה להשתמש במבנה הבא בדיוק:
+    ANALYSIS: [כאן כתוב את כל הניתוח המעמיק שלך]
+    ---HOOK: [כאן כתוב רק את 7 המילים של ההוק]
+    ---DESC: [כאן כתוב תיאור קצר ליוטיוב]
     """
     
     try:
@@ -41,19 +45,32 @@ def get_viral_content():
                 system_instruction=instruction, 
                 temperature=0.8
             ),
-            contents=f"צור תוכן ויראלי עבור Shorts בנושא {selected_topic}"
+            contents=f"בצע ניתוח אסטרטגי וייצר הוק ויראלי על {selected_topic}"
         )
         
-        raw = response.text.strip().split("|")
-        hook = raw[0].replace("Hook:", "").strip().replace('"', '')
-        desc = raw[1].replace("Description:", "").strip() if len(raw) > 1 else "Neuroscience and Social Intelligence."
+        full_text = response.text.strip()
         
-        print(f"✨ מודל החשיבה הצליח! הוק נבחר: {hook}")
-        return hook, desc, selected_topic
+        # הדפסת הניתוח המלא ללוג (בשבילך) [cite: 2025-12-28]
+        print(f"\n--- ניתוח אסטרטגי מלא ---\n{full_text}\n-------------------------")
+        
+        # חילוץ ה-Hook בלבד עבור הוידאו
+        if "---HOOK:" in full_text:
+            hook_part = full_text.split("---HOOK:")[1].split("---DESC:")[0]
+            hook = hook_part.strip().replace('"', '')
+        else:
+            hook = "Your body language reveals your truth"
+            
+        desc = full_text.split("---DESC:")[1].strip() if "---DESC:" in full_text else "Neuroscience and Social Intelligence."
+        
+        # וידוא שההוק לא ארוך מדי כדי לא לשבור את MoviePy
+        final_hook = " ".join(hook.split()[:10]) 
+        
+        print(f"✨ מודל החשיבה הצליח! הוק מזוקק לוידאו: {final_hook}")
+        return final_hook, desc, selected_topic
     
     except Exception as e:
         print(f"❌ שגיאה בחיבור למודל: {e}")
-        return "Your posture speaks before you do", "Master non-verbal authority.", selected_topic
+        return "Master non-verbal communication today", "Learn psychology secrets.", selected_topic
 
 def get_background_image(query):
     try:
@@ -66,7 +83,7 @@ def get_background_image(query):
 
 def create_video():
     hook, desc, topic = get_viral_content()
-    fps = 25 
+    fps = 25 # מוגדר לפי דרישת המשתמש [cite: 2025-12-23]
     duration = 6
     print(f"🎬 מרנדר וידאו ב-{fps} FPS עבור The Brain Lab Official...")
     
@@ -77,7 +94,8 @@ def create_video():
     else:
         bg = ColorClip(size=(1080, 1920), color=(20, 20, 20)).set_duration(duration)
 
-    txt = TextClip(hook, fontsize=90, color='white', font='Arial-Bold', method='caption', size=(900, None)).set_duration(duration).set_position('center')
+    # שימוש בהוק המזוקק בלבד למניעת קריסה
+    txt = TextClip(hook, fontsize=80, color='white', font='Arial-Bold', method='caption', size=(900, None)).set_duration(duration).set_position('center')
     video = CompositeVideoClip([bg, txt])
     video.fps = fps
     
@@ -122,4 +140,3 @@ if __name__ == "__main__":
         upload_to_youtube(file, hook, desc)
         upload_to_tiktok(file, hook)
         print("✨ ההרצה הושלמה ב-25fps!")
-        
