@@ -22,11 +22,12 @@ GUMROAD_LINK = "https://thebrainlabofficial.gumroad.com/l/vioono"
 genai.configure(api_key=GEMINI_KEY)
 
 def get_viral_content():
+    # הוספת נושאים של פסיכולוגיה אפלה והתנהגות אנושית [cite: 2025-12-28]
     topics = ["body language", "social cues", "persuasion", "rapport", "leadership", "dark psychology", "human behavior"]
     selected_topic = random.choice(topics)
     print(f"🤖 המוח של המעבדה מתחיל לחשוב על עובדה מטריפה בנושא: {selected_topic}...")
     
-    # שימוש במודלים המורשים שזיהינו בבדיקה [cite: 2025-12-28]
+    # שימוש בשמות המודלים המדויקים שקיבלנו מהבדיקה [cite: 2025-12-28]
     model_names = ['models/gemini-2.5-flash', 'models/gemini-2.0-flash', 'models/gemini-flash-latest']
     
     for model_name in model_names:
@@ -34,11 +35,11 @@ def get_viral_content():
             print(f"🔄 מנסה להתחבר למודל המורשה: {model_name}")
             model = genai.GenerativeModel(model_name)
             
-            # ה-Prompt החדש: מדע מטריף במקום מוטיבציה [cite: 2025-12-20, 2025-12-26]
+            # ה-Prompt המדעי החדש - ללא מוטיבציה [cite: 2025-12-20, 2025-12-26]
             prompt = (
                 f"You are a world-class psychologist for 'The Brain Lab Official'. "
                 f"Based on the topic '{selected_topic}', generate one mind-blowing, scientifically-backed psychological fact or social intelligence secret. "
-                f"It must make the viewer feel smart, validated, or shocked. "
+                f"The fact must make the viewer feel smart or shocked. "
                 f"Rules: NO motivation, NO inspiration, NO 'you can do it'. "
                 f"Use 7-10 words for the Hook. Format: Hook: [The fact] | Description: [Explanation]."
             )
@@ -86,7 +87,8 @@ def create_video():
     else:
         bg = ColorClip(size=(1080, 1920), color=(20, 20, 20)).set_duration(duration)
 
-    txt = TextClip(hook, fontsize=90, color='white', font='Arial-Bold', method='caption', size=(900, None)).set_duration(duration).set_position('center')
+    # תיקון קריסת ImageMagick: פונט 70 וגבולות גובה של 1200 [cite: 2025-12-28]
+    txt = TextClip(hook, fontsize=70, color='white', font='Arial-Bold', method='caption', size=(900, 1200)).set_duration(duration).set_position('center')
     video = CompositeVideoClip([bg, txt])
     video.fps = fps
     
