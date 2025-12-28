@@ -22,12 +22,10 @@ GUMROAD_LINK = "https://thebrainlabofficial.gumroad.com/l/vioono"
 genai.configure(api_key=GEMINI_KEY)
 
 def get_viral_content():
-    # הוספת נושאים של פסיכולוגיה אפלה והתנהגות אנושית [cite: 2025-12-28]
     topics = ["body language", "social cues", "persuasion", "rapport", "leadership", "dark psychology", "human behavior"]
     selected_topic = random.choice(topics)
     print(f"🤖 המוח של המעבדה מתחיל לחשוב על עובדה מטריפה בנושא: {selected_topic}...")
     
-    # שימוש בשמות המודלים המדויקים שקיבלנו מהבדיקה [cite: 2025-12-28]
     model_names = ['models/gemini-2.5-flash', 'models/gemini-2.0-flash', 'models/gemini-flash-latest']
     
     for model_name in model_names:
@@ -35,19 +33,17 @@ def get_viral_content():
             print(f"🔄 מנסה להתחבר למודל המורשה: {model_name}")
             model = genai.GenerativeModel(model_name)
             
-            # ה-Prompt המדעי החדש - ללא מוטיבציה [cite: 2025-12-20, 2025-12-26]
+            # Prompt מעודכן למניעת תווים מיוחדים ששוברים את הרינדור
             prompt = (
                 f"You are a world-class psychologist for 'The Brain Lab Official'. "
-                f"Based on the topic '{selected_topic}', generate one mind-blowing, scientifically-backed psychological fact or social intelligence secret. "
-                f"The fact must make the viewer feel smart or shocked. "
-                f"Rules: NO motivation, NO inspiration, NO 'you can do it'. "
-                f"Use 7-10 words for the Hook. Format: Hook: [The fact] | Description: [Explanation]."
+                f"Based on the topic '{selected_topic}', generate one mind-blowing, scientifically-backed psychological fact. "
+                f"Rules: NO motivation, NO asterisks, NO special characters like *. "
+                f"Use exactly 7-10 words. Format: Hook: [The fact] | Description: [Explanation]."
             )
             
             response = model.generate_content(prompt)
-            
             raw = response.text.strip().split("|")
-            hook = raw[0].replace("Hook:", "").strip().replace('"', '')
+            hook = raw[0].replace("Hook:", "").strip().replace('"', '').replace('*', '')
             desc = raw[1].replace("Description:", "").strip() if len(raw) > 1 else "Psychological insight."
             
             print(f"✨ הצלחה! המדען ג'מיני גילה: {hook}")
@@ -55,15 +51,7 @@ def get_viral_content():
         except Exception as e:
             print(f"❌ המודל {model_name} נכשל: {e}")
             continue
-
-    print("⚠️ כל המודלים נכשלו, עובר לגיבוי אקראי.")
-    fallbacks = [
-        ("High intelligence is linked to fewer friends", "Smart people are more selective."),
-        ("Your brain makes decisions 7 seconds before you", "The subconscious mind rules."),
-        ("Silence after a question forces the truth", "The power of a strategic pause.")
-    ]
-    f_hook, f_desc = random.choice(fallbacks)
-    return f_hook, f_desc, selected_topic
+    return "Intelligence linked to fewer friends", "Smart people are selective.", "human behavior"
 
 def get_background_image(query):
     try:
@@ -76,7 +64,7 @@ def get_background_image(query):
 
 def create_video():
     hook, desc, topic = get_viral_content()
-    fps = 25 # שומרים על הקצב שלך [cite: 2025-12-23]
+    fps = 25 
     duration = 6
     print(f"🎬 מרנדר וידאו ב-{fps} FPS עבור The Brain Lab Official...")
     
@@ -87,8 +75,8 @@ def create_video():
     else:
         bg = ColorClip(size=(1080, 1920), color=(20, 20, 20)).set_duration(duration)
 
-    # תיקון קריסת ImageMagick: פונט 70 וגבולות גובה של 1200 [cite: 2025-12-28]
-    txt = TextClip(hook, fontsize=70, color='white', font='Arial-Bold', method='caption', size=(900, 1200)).set_duration(duration).set_position('center')
+    # הגדרות טקסט בטוחות יותר למניעת קריסת השרת
+    txt = TextClip(hook, fontsize=60, color='white', font='Arial-Bold', method='caption', size=(800, None)).set_duration(duration).set_position('center')
     video = CompositeVideoClip([bg, txt])
     video.fps = fps
     
@@ -105,34 +93,17 @@ def upload_to_youtube(file_path, title, description):
     try:
         config = json.loads(CLIENT_SECRET_RAW)
         creds_data = config.get('installed') or config.get('web')
-        creds = Credentials(
-            token=None,
-            refresh_token=REFRESH_TOKEN,
-            token_uri="https://oauth2.googleapis.com/token",
-            client_id=creds_data['client_id'],
-            client_secret=creds_data['client_secret']
-        )
+        creds = Credentials(token=None, refresh_token=REFRESH_TOKEN, token_uri="https://oauth2.googleapis.com/token", client_id=creds_data['client_id'], client_secret=creds_data['client_secret'])
         creds.refresh(Request())
         youtube = build("youtube", "v3", credentials=creds)
-        body = {
-            "snippet": {"title": title[:100], "description": description + f"\n\n{GUMROAD_LINK}", "categoryId": "27"},
-            "status": {"privacyStatus": "public", "selfDeclaredMadeForKids": False}
-        }
+        body = {"snippet": {"title": title[:100], "description": description + f"\n\n{GUMROAD_LINK}", "categoryId": "27"}, "status": {"privacyStatus": "public", "selfDeclaredMadeForKids": False}}
         media = MediaFileUpload(file_path, chunksize=-1, resumable=True)
-        response = youtube.videos().insert(part="snippet,status", body=body, media_body=media).execute()
-        print(f"✅ עלה ליוטיוב! ID: {response.get('id')}")
+        youtube.videos().insert(part="snippet,status", body=body, media_body=media).execute()
+        print(f"✅ עלה ליוטיוב!")
     except Exception as e: print(f"❌ שגיאה ביוטיוב: {e}")
-
-def upload_to_tiktok(file_path, title):
-    print("📱 שולח לטיקטוק (The Brain Lab Official)...")
-    if not TIKTOK_TOKEN:
-        print("⚠️ חסר TIKTOK_ACCESS_TOKEN ב-Secrets, מדלג על טיקטוק.")
-        return
-    print(f"✅ המנוע זיהה את הטוקן ומוכן להעלאה עבור: {title}")
 
 if __name__ == "__main__":
     if all([GEMINI_KEY, REFRESH_TOKEN, CLIENT_SECRET_RAW]):
         file, hook, desc = create_video()
         upload_to_youtube(file, hook, desc)
-        upload_to_tiktok(file, hook)
         print("✨ ההרצה הושלמה ב-25fps!")
