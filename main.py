@@ -18,41 +18,44 @@ REFRESH_TOKEN = os.environ.get("YOUTUBE_REFRESH_TOKEN")
 TIKTOK_TOKEN = os.environ.get("TIKTOK_ACCESS_TOKEN")
 GUMROAD_LINK = "https://thebrainlabofficial.gumroad.com/l/vioono"
 
-# הגדרת הקליינט החדש של גוגל (פותר את שגיאת ה-404)
+# הגדרת הקליינט החדש (google-genai)
 client = genai.Client(api_key=GEMINI_KEY)
 
 def get_viral_content():
     topics = ["body language", "social cues", "persuasion", "rapport", "leadership"]
     selected_topic = random.choice(topics)
-    print(f"🧠 מפעיל מודל חשיבה על: {selected_topic}...")
+    print(f"🧠 מפעיל מודל חשיבה (Gemini 2.5 Pro) על: {selected_topic}...")
     
-    # הגדרות מערכת למודל חשיבה (Thinking Model / CoT)
+    # הגדרות מערכת ל-Chain of Thought
     instruction = """
-    אתה המוח מאחורי 'The Brain Lab Official'. 
-    לפני שאתה כותב את התסריט, בצע חשיבה (Reasoning):
-    1. מה הטריגר הפסיכולוגי הכי חזק בנושא הזה?
-    2. איך לגרום לצופה לעצור בשנייה הראשונה?
-    3. כתוב 'Hook' של עד 7 מילים ו'Description' קצר.
-    פורמט תשובה: Hook: [טקסט] | Description: [טקסט]
+    אתה המוח האסטרטגי מאחורי 'The Brain Lab Official'. 
+    לפני כתיבת התסריט, בצע ניתוח מהיר:
+    1. מהו הטריגר הפסיכולוגי שיגרום לאנשים לעצור (Scroll-stopper)?
+    2. איך להעביר ערך מקסימלי ב-7 מילים בלבד?
+    3. כתוב את התוצאה בפורמט הבא בלבד: Hook: [טקסט] | Description: [טקסט]
     """
     
     try:
-        # שימוש במודל 1.5 Pro ליכולות חשיבה משופרות
+        # שימוש במודל 2.5 Pro שנמצא זמין במפתח שלך
         response = client.models.generate_content(
-            model="gemini-1.5-pro",
-            config=types.GenerateContentConfig(system_instruction=instruction, temperature=0.8),
-            contents=f"צור תוכן ויראלי על {selected_topic}"
+            model="gemini-2.5-pro", 
+            config=types.GenerateContentConfig(
+                system_instruction=instruction, 
+                temperature=0.8
+            ),
+            contents=f"צור תוכן ויראלי עבור Shorts בנושא {selected_topic}"
         )
         
         raw = response.text.strip().split("|")
         hook = raw[0].replace("Hook:", "").strip().replace('"', '')
-        desc = raw[1].replace("Description:", "").strip() if len(raw) > 1 else "Neuroscience insights."
+        desc = raw[1].replace("Description:", "").strip() if len(raw) > 1 else "Neuroscience and Social Intelligence."
         
-        print(f"✨ מודל החשיבה הצליח! משפט נבחר: {hook}")
+        print(f"✨ מודל החשיבה הצליח! הוק נבחר: {hook}")
         return hook, desc, selected_topic
     
     except Exception as e:
-        print(f"❌ מודל החשיבה נכשל, עובר לגיבוי: {e}")
+        print(f"❌ שגיאה בחיבור למודל: {e}")
+        # גיבוי במקרה של תקלה ב-API
         fallbacks = [
             ("Your posture speaks before you do", "Master non-verbal authority."),
             ("Eyes tell what words try to hide", "Read emotions like a pro.")
@@ -71,7 +74,7 @@ def get_background_image(query):
 
 def create_video():
     hook, desc, topic = get_viral_content()
-    fps = 25 # שומרים על הקצב שלך [cite: 2025-12-23]
+    fps = 25 # הגדרה קבועה שלך [cite: 2025-12-23]
     duration = 6
     print(f"🎬 מרנדר וידאו ב-{fps} FPS עבור The Brain Lab Official...")
     
@@ -84,7 +87,7 @@ def create_video():
 
     txt = TextClip(hook, fontsize=90, color='white', font='Arial-Bold', method='caption', size=(900, None)).set_duration(duration).set_position('center')
     video = CompositeVideoClip([bg, txt])
-    video.fps = fps
+    video.fps = fps # וידוא FPS בתוך האובייקט [cite: 2025-12-23]
     
     audio_file = "Resolution - Wayne Jones.mp3"
     if os.path.exists(audio_file):
@@ -120,16 +123,14 @@ def upload_to_youtube(file_path, title, description):
 def upload_to_tiktok(file_path, title):
     print("📱 שולח לטיקטוק (The Brain Lab Official)...")
     if not TIKTOK_TOKEN:
-        print("⚠️ חסר TIKTOK_ACCESS_TOKEN, מדלג.")
+        print("⚠️ חסר TIKTOK_ACCESS_TOKEN, מדלג על טיקטוק.") [cite: 2025-12-26]
         return
-    # כאן יבוא הקוד לחיבור ל-Content Posting API ברגע שנקבל את הטוקן [cite: 2025-12-26]
-    print(f"✅ מנוע הטיקטוק מוכן להעלאה עבור: {title}")
+    # הקוד המלא להעלאה יוסף ברגע שנצליח להשיג את הטוקן מה-Sandbox
+    print(f"✅ מערכת טיקטוק מוכנה להעלאה בעתיד עבור: {title}")
 
 if __name__ == "__main__":
-    print("🔍 בודק אילו מודלים זמינים למפתח שלך...")
-    try:
-        models = client.models.list()
-        for m in models:
-            print(f"-> מודל זמין: {m.name}")
-    except Exception as e:
-        print(f"❌ שגיאה בקבלת רשימת מודלים: {e}")
+    if all([GEMINI_KEY, REFRESH_TOKEN, CLIENT_SECRET_RAW]):
+        file, hook, desc = create_video()
+        upload_to_youtube(file, hook, desc)
+        upload_to_tiktok(file, hook)
+        print("✨ ההרצה הושלמה ב-25fps!") [cite: 2025-12-23]
