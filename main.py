@@ -22,35 +22,44 @@ GUMROAD_LINK = "https://thebrainlabofficial.gumroad.com/l/vioono"
 genai.configure(api_key=GEMINI_KEY)
 
 def get_viral_content():
-    topics = ["body language", "social cues", "persuasion", "rapport", "leadership"]
+    topics = ["body language", "social cues", "persuasion", "rapport", "leadership", "dark psychology", "human behavior"]
     selected_topic = random.choice(topics)
-    print(f"🤖 המוח של המעבדה מתחיל לחשוב על: {selected_topic}...")
+    print(f"🤖 המוח של המעבדה מתחיל לחשוב על עובדה מטריפה בנושא: {selected_topic}...")
     
-    # עדכון שמות המודלים לפי הרשימה המורשת שקיבלנו מהבדיקה
+    # שימוש במודלים המורשים שזיהינו בבדיקה [cite: 2025-12-28]
     model_names = ['models/gemini-2.5-flash', 'models/gemini-2.0-flash', 'models/gemini-flash-latest']
     
     for model_name in model_names:
         try:
             print(f"🔄 מנסה להתחבר למודל המורשה: {model_name}")
             model = genai.GenerativeModel(model_name)
-            prompt = f"Write a viral 7-word hook about {selected_topic}. Format: Hook: [text] | Description: [text]."
+            
+            # ה-Prompt החדש: מדע מטריף במקום מוטיבציה [cite: 2025-12-20, 2025-12-26]
+            prompt = (
+                f"You are a world-class psychologist for 'The Brain Lab Official'. "
+                f"Based on the topic '{selected_topic}', generate one mind-blowing, scientifically-backed psychological fact or social intelligence secret. "
+                f"It must make the viewer feel smart, validated, or shocked. "
+                f"Rules: NO motivation, NO inspiration, NO 'you can do it'. "
+                f"Use 7-10 words for the Hook. Format: Hook: [The fact] | Description: [Explanation]."
+            )
+            
             response = model.generate_content(prompt)
             
             raw = response.text.strip().split("|")
             hook = raw[0].replace("Hook:", "").strip().replace('"', '')
-            desc = raw[1].replace("Description:", "").strip() if len(raw) > 1 else "Social Intelligence tips."
+            desc = raw[1].replace("Description:", "").strip() if len(raw) > 1 else "Psychological insight."
             
-            print(f"✨ הצלחה! ג'מיני המציא משפט חדש: {hook}")
+            print(f"✨ הצלחה! המדען ג'מיני גילה: {hook}")
             return hook, desc, selected_topic
         except Exception as e:
             print(f"❌ המודל {model_name} נכשל: {e}")
             continue
 
-    print("⚠️ כל המודלים נכשלו, עובר לגיבוי אקראי למניעת חזרתיות.")
+    print("⚠️ כל המודלים נכשלו, עובר לגיבוי אקראי.")
     fallbacks = [
-        ("Your posture speaks before you do", "Master non-verbal authority."),
-        ("Eyes tell what words try to hide", "Read emotions like a pro."),
-        ("The power of a strategic pause", "Why silence is your best weapon.")
+        ("High intelligence is linked to fewer friends", "Smart people are more selective."),
+        ("Your brain makes decisions 7 seconds before you", "The subconscious mind rules."),
+        ("Silence after a question forces the truth", "The power of a strategic pause.")
     ]
     f_hook, f_desc = random.choice(fallbacks)
     return f_hook, f_desc, selected_topic
