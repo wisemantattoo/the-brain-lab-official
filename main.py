@@ -2,7 +2,8 @@ import os
 import json
 import requests
 import random
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from moviepy.editor import TextClip, ColorClip, CompositeVideoClip, AudioFileClip, ImageClip
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
@@ -15,45 +16,49 @@ UNSPLASH_KEY = os.environ.get("UNSPLASH_ACCESS_KEY")
 CLIENT_SECRET_RAW = os.environ.get("CLIENT_SECRET_JSON")
 REFRESH_TOKEN = os.environ.get("YOUTUBE_REFRESH_TOKEN")
 TIKTOK_TOKEN = os.environ.get("TIKTOK_ACCESS_TOKEN")
-
 GUMROAD_LINK = "https://thebrainlabofficial.gumroad.com/l/vioono"
 
-# הגדרת בסיס ל-AI
-genai.configure(api_key=GEMINI_KEY)
+# הגדרת הקליינט החדש של גוגל (פותר את שגיאת ה-404)
+client = genai.Client(api_key=GEMINI_KEY)
 
 def get_viral_content():
     topics = ["body language", "social cues", "persuasion", "rapport", "leadership"]
     selected_topic = random.choice(topics)
-    print(f"🤖 מנסה לייצר תוכן מקורי על: {selected_topic}...")
+    print(f"🧠 מפעיל מודל חשיבה על: {selected_topic}...")
     
-    # רשימת מודלים לניסיון בזה אחר זה למניעת שגיאת 404
-    model_names = ['gemini-1.5-flash', 'gemini-pro']
+    # הגדרות מערכת למודל חשיבה (Thinking Model / CoT)
+    instruction = """
+    אתה המוח מאחורי 'The Brain Lab Official'. 
+    לפני שאתה כותב את התסריט, בצע חשיבה (Reasoning):
+    1. מה הטריגר הפסיכולוגי הכי חזק בנושא הזה?
+    2. איך לגרום לצופה לעצור בשנייה הראשונה?
+    3. כתוב 'Hook' של עד 7 מילים ו'Description' קצר.
+    פורמט תשובה: Hook: [טקסט] | Description: [טקסט]
+    """
     
-    for model_name in model_names:
-        try:
-            print(f"🔄 מנסה להתחבר למודל: {model_name}")
-            model = genai.GenerativeModel(model_name)
-            prompt = f"Write a viral 7-word hook about {selected_topic}. Format: Hook: [text] | Description: [text]."
-            response = model.generate_content(prompt)
-            
-            raw = response.text.strip().split("|")
-            hook = raw[0].replace("Hook:", "").strip().replace('"', '')
-            desc = raw[1].replace("Description:", "").strip() if len(raw) > 1 else "Social Intelligence tips."
-            
-            print(f"✨ הצלחה! ג'מיני המציא משפט חדש: {hook}")
-            return hook, desc, selected_topic
-        except Exception as e:
-            print(f"❌ המודל {model_name} נכשל: {e}")
-            continue
-
-    print("⚠️ כל המודלים נכשלו, עובר לגיבוי אקראי למניעת חזרתיות.")
-    fallbacks = [
-        ("Your posture speaks before you do", "Master non-verbal authority."),
-        ("Eyes tell what words try to hide", "Read emotions like a pro."),
-        ("The power of a strategic pause", "Why silence is your best weapon.")
-    ]
-    f_hook, f_desc = random.choice(fallbacks)
-    return f_hook, f_desc, selected_topic
+    try:
+        # שימוש במודל 1.5 Pro ליכולות חשיבה משופרות
+        response = client.models.generate_content(
+            model="gemini-1.5-pro",
+            config=types.GenerateContentConfig(system_instruction=instruction, temperature=0.8),
+            contents=f"צור תוכן ויראלי על {selected_topic}"
+        )
+        
+        raw = response.text.strip().split("|")
+        hook = raw[0].replace("Hook:", "").strip().replace('"', '')
+        desc = raw[1].replace("Description:", "").strip() if len(raw) > 1 else "Neuroscience insights."
+        
+        print(f"✨ מודל החשיבה הצליח! משפט נבחר: {hook}")
+        return hook, desc, selected_topic
+    
+    except Exception as e:
+        print(f"❌ מודל החשיבה נכשל, עובר לגיבוי: {e}")
+        fallbacks = [
+            ("Your posture speaks before you do", "Master non-verbal authority."),
+            ("Eyes tell what words try to hide", "Read emotions like a pro.")
+        ]
+        f_hook, f_desc = random.choice(fallbacks)
+        return f_hook, f_desc, selected_topic
 
 def get_background_image(query):
     try:
@@ -94,7 +99,6 @@ def upload_to_youtube(file_path, title, description):
     try:
         config = json.loads(CLIENT_SECRET_RAW)
         creds_data = config.get('installed') or config.get('web')
-        # וידוא מבנה סוגריים למניעת SyntaxError
         creds = Credentials(
             token=None,
             refresh_token=REFRESH_TOKEN,
@@ -109,16 +113,17 @@ def upload_to_youtube(file_path, title, description):
             "status": {"privacyStatus": "public", "selfDeclaredMadeForKids": False}
         }
         media = MediaFileUpload(file_path, chunksize=-1, resumable=True)
-        response = youtube.videos().insert(part="snippet,status", body=body, media_body=media).execute()
-        print(f"✅ עלה ליוטיוב! ID: {response.get('id')}")
+        youtube.videos().insert(part="snippet,status", body=body, media_body=media).execute()
+        print("✅ עלה ליוטיוב בהצלחה!")
     except Exception as e: print(f"❌ שגיאה ביוטיוב: {e}")
 
 def upload_to_tiktok(file_path, title):
     print("📱 שולח לטיקטוק (The Brain Lab Official)...")
     if not TIKTOK_TOKEN:
-        print("⚠️ חסר TIKTOK_ACCESS_TOKEN ב-Secrets, מדלג על טיקטוק.")
+        print("⚠️ חסר TIKTOK_ACCESS_TOKEN, מדלג.")
         return
-    print(f"✅ המנוע זיהה את הטוקן ומוכן להעלאה עבור: {title}")
+    # כאן יבוא הקוד לחיבור ל-Content Posting API ברגע שנקבל את הטוקן [cite: 2025-12-26]
+    print(f"✅ מנוע הטיקטוק מוכן להעלאה עבור: {title}")
 
 if __name__ == "__main__":
     if all([GEMINI_KEY, REFRESH_TOKEN, CLIENT_SECRET_RAW]):
