@@ -18,15 +18,14 @@ REFRESH_TOKEN = os.environ.get("YOUTUBE_REFRESH_TOKEN")
 TIKTOK_TOKEN = os.environ.get("TIKTOK_ACCESS_TOKEN")
 GUMROAD_LINK = "https://thebrainlabofficial.gumroad.com/l/vioono"
 
-# הגדרת הקליינט החדש (google-genai)
+# הגדרת הקליינט החדש
 client = genai.Client(api_key=GEMINI_KEY)
 
 def get_viral_content():
     topics = ["body language", "social cues", "persuasion", "rapport", "leadership"]
     selected_topic = random.choice(topics)
-    print(f"🧠 מפעיל מודל חשיבה (Gemini 2.5 Pro) על: {selected_topic}...")
+    print(f"🧠 מפעיל מודל חשיבה (Gemini 2.0 Flash) על: {selected_topic}...")
     
-    # הגדרות מערכת ל-Chain of Thought
     instruction = """
     אתה המוח האסטרטגי מאחורי 'The Brain Lab Official'. 
     לפני כתיבת התסריט, בצע ניתוח מהיר:
@@ -36,9 +35,9 @@ def get_viral_content():
     """
     
     try:
-        # שימוש במודל 2.5 Pro שנמצא זמין במפתח שלך
+        # מעבר למודל פלאש לפתרון בעיית ה-Quota
         response = client.models.generate_content(
-            model="gemini-2.5-pro", 
+            model="gemini-2.0-flash", 
             config=types.GenerateContentConfig(
                 system_instruction=instruction, 
                 temperature=0.8
@@ -55,7 +54,6 @@ def get_viral_content():
     
     except Exception as e:
         print(f"❌ שגיאה בחיבור למודל: {e}")
-        # גיבוי במקרה של תקלה ב-API
         fallbacks = [
             ("Your posture speaks before you do", "Master non-verbal authority."),
             ("Eyes tell what words try to hide", "Read emotions like a pro.")
@@ -74,7 +72,7 @@ def get_background_image(query):
 
 def create_video():
     hook, desc, topic = get_viral_content()
-    fps = 25 # הגדרה קבועה שלך [cite: 2025-12-23]
+    fps = 25 
     duration = 6
     print(f"🎬 מרנדר וידאו ב-{fps} FPS עבור The Brain Lab Official...")
     
@@ -87,7 +85,7 @@ def create_video():
 
     txt = TextClip(hook, fontsize=90, color='white', font='Arial-Bold', method='caption', size=(900, None)).set_duration(duration).set_position('center')
     video = CompositeVideoClip([bg, txt])
-    video.fps = fps # וידוא FPS בתוך האובייקט [cite: 2025-12-23]
+    video.fps = fps
     
     audio_file = "Resolution - Wayne Jones.mp3"
     if os.path.exists(audio_file):
@@ -123,9 +121,8 @@ def upload_to_youtube(file_path, title, description):
 def upload_to_tiktok(file_path, title):
     print("📱 שולח לטיקטוק (The Brain Lab Official)...")
     if not TIKTOK_TOKEN:
-        print("⚠️ חסר TIKTOK_ACCESS_TOKEN, מדלג על טיקטוק.") [cite: 2025-12-26]
+        print("⚠️ חסר TIKTOK_ACCESS_TOKEN, מדלג על טיקטוק.")
         return
-    # הקוד המלא להעלאה יוסף ברגע שנצליח להשיג את הטוקן מה-Sandbox
     print(f"✅ מערכת טיקטוק מוכנה להעלאה בעתיד עבור: {title}")
 
 if __name__ == "__main__":
@@ -133,4 +130,4 @@ if __name__ == "__main__":
         file, hook, desc = create_video()
         upload_to_youtube(file, hook, desc)
         upload_to_tiktok(file, hook)
-        print("✨ ההרצה הושלמה ב-25fps!") [cite: 2025-12-23]
+        print("✨ ההרצה הושלמה ב-25fps!")
