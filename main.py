@@ -20,27 +20,48 @@ GUMROAD_LINK = "https://thebrainlabofficial.gumroad.com/l/vioono"
 
 client = genai.Client(api_key=GEMINI_KEY)
 
+OFFICIAL_DESCRIPTION = """Welcome to The Brain Lab. 🧠
+We decode the human mind, one fact at a time. Our mission is to provide you with science-backed insights and actionable protocols to rewire your brain for success, focus, and peak performance.
+
+🔬 Explore the Laboratory: We take complex neuroscience and turn it into simple, daily habits that you can start using today.
+
+⚡ Get Started with Protocol #001: Download our official Morning Protocol to eliminate mental fog and prime your brain for the day: https://thebrainlabofficial.gumroad.com/l/vioono
+
+Subscribe to join the experiment and start decoding your mind."""
+
 def get_viral_content():
-    topics = ["dark psychology", "interrogation tactics", "social dominance", "manipulation detection", "high-stakes rapport"]
+    # 12 הפרוטוקולים החדשים: NLP, שב"כ ומנטליזם [cite: 2025-12-28]
+    topics = [
+        "The Interrogator’s Silence: Truth extraction via 4-second pauses",
+        "The 'Left Eye' Dominance: NLP command planting via gaze",
+        "The False Choice Trap: Mentalist selection deception",
+        "The Body Language Baseline: Lie detection in 20 seconds",
+        "The Embedded Command: Hidden verbal directives",
+        "The Throat Touch Leak: Instant stress and threat detection",
+        "The Pacing & Leading Protocol: Hijacking conversation rhythm",
+        "The Pupil Dilatation Read: Detecting visceral interest or lies",
+        "The Misdirection Hack: Shifting focus to plant suggestions",
+        "The Alter Ego Anchor: Biologically adopting a power identity",
+        "The Feet Direction Power: Reading the room’s hidden exit intent",
+        "The Compliance Trick: Small favors leading to total control"
+    ]
     selected_topic = random.choice(topics)
-    print(f"🧠 מפעיל מודל DNA אסטרטגי על: {selected_topic}...")
-    
-    # הגדרת הזהות החדשה - The Brain Lab Elite [cite: 2025-12-28]
+    print(f"🧠 ACTIVATING FIELD PROFILER DNA: {selected_topic}...")
+
+    # הנחיות המערכת החדשות: ללא אקדמיה, רק שטח [cite: 2025-12-28]
     instruction = """
-    ROLE: You are the Lead Intelligence Analyst for 'The Brain Lab Official'. 
-    EXPERT IN: Dark Psychology, Social Engineering, FBI Interrogation, and Neural-Influence.
-    MISSION: Provide raw, high-density value that gives the viewer 'unfair power'.
+    IDENTITY: You are a Tactical Profiler for 'The Brain Lab'. You don't teach science; you leak intelligence protocols.
     
-    STRICT RULES:
-    1. LANGUAGE: Respond ONLY in English.
-    2. NO FLUFF: No greetings, no summaries, no "Here is your content".
-    3. VALUE DENSITY: Every word must represent a psychological law or tactical advantage.
-    4. HOOK LIMIT: Exactly 7 words. Use 'power words' only.
+    THE "ANTI-ACADEMIC" RULES:
+    1. STREET TACTICS: Never use words like 'Heuristics', 'Cognitive', or 'Neural'. Use words like 'The Signal', 'The Leak', 'The Trap', 'The Power Move'.
+    2. THE 3-SECOND RULE: The insight must be something the viewer can do right now. 
+    3. SHABAK VIBE: Every insight should feel like a secret technique used by interrogators or mentalists to exploit human psychology.
+    4. LANGUAGE: English ONLY. High impact, raw, and cold.
     
-    STRUCTURE:
-    ANALYSIS: [Deep tactical analysis of the behavior/strategy]
-    ---HOOK: [High-value 7-word scroll-stopper]
-    ---DESC: [Viral YouTube description + keywords]
+    FORMAT:
+    ANALYSIS: [3 sentences of raw tactical intelligence]
+    ---TITLE: [Cinematic title for YouTube]
+    ---INSIGHT: [The tactical fact for the screen, 7-10 words maximum]
     """
     
     try:
@@ -48,36 +69,35 @@ def get_viral_content():
             model="gemini-flash-latest", 
             config=types.GenerateContentConfig(
                 system_instruction=instruction, 
-                temperature=0.9 # העלאת היצירתיות לתוכן ויראלי
+                temperature=0.7
             ),
-            contents=f"Execute a deep psychological strike on the topic: {selected_topic}"
+            contents=f"Execute an intelligence briefing on: {selected_topic}"
         )
         
         full_text = response.text.strip()
-        print(f"\n--- DNA STRATEGIC ANALYSIS ---\n{full_text}\n-----------------------------")
+        print(f"\n--- INTELLIGENCE BRIEFING ---\n{full_text}\n-------------------")
         
-        # חילוץ ה-Hook המזוקק
-        if "---HOOK:" in full_text:
-            hook = full_text.split("---HOOK:")[1].split("---DESC:")[0].strip().replace('"', '')
+        # פירוק הטקסט בצורה בטוחה
+        if "---TITLE:" in full_text and "---INSIGHT:" in full_text:
+            title = full_text.split("---TITLE:")[1].split("---INSIGHT:")[0].strip()
+            insight = full_text.split("---INSIGHT:")[1].strip()
         else:
-            hook = "Master your mind before they do it"
-            
-        desc = full_text.split("---DESC:")[1].strip() if "---DESC:" in full_text else "Strategic Social Intelligence."
+            title = "Tactical Intelligence Protocol"
+            insight = "Master the room with silent authority"
         
-        # וידוא אורך למניעת קריסת הרינדור
-        final_hook = " ".join(hook.split()[:8]) 
-        
-        print(f"✨ ערך מזוקק לוידאו: {final_hook}")
-        return final_hook, desc, selected_topic
+        final_insight = " ".join(insight.split()[:10]).upper()
+        final_title = " ".join(title.split()[:10])
+
+        print(f"✨ FIELD SIGNAL READY: {final_insight}")
+        return final_insight, final_title, selected_topic
     
     except Exception as e:
-        print(f"❌ שגיאה בחיבור למודל: {e}")
-        return "Silent power is the strongest force", "Dark psychology secrets.", selected_topic
+        print(f"❌ PROTOCOL ERROR: {e}")
+        return "SILENCE IS POWER: WAIT 4 SECONDS", "Strategic Silence", selected_topic
 
 def get_background_image(query):
     try:
-        # חיפוש תמונות "אפלות" ומקצועיות יותר
-        url = f"https://api.unsplash.com/photos/random?query={query},cinematic,dark&orientation=portrait&client_id={UNSPLASH_KEY}"
+        url = f"https://api.unsplash.com/photos/random?query={query},dark,cinematic,minimalist&orientation=portrait&client_id={UNSPLASH_KEY}"
         res = requests.get(url).json()
         img_url = res['urls']['regular']
         with open("bg.jpg", 'wb') as f: f.write(requests.get(img_url).content)
@@ -85,20 +105,19 @@ def get_background_image(query):
     except: return None
 
 def create_video():
-    hook, desc, topic = get_viral_content()
-    fps = 25 
-    duration = 6
-    print(f"🎬 מרנדר וידאו ב-{fps} FPS - The Brain Lab Production...")
+    insight, title, topic = get_viral_content()
+    fps = 25 # מוגדר לפי דרישת המשתמש [cite: 2025-12-23]
+    duration = 8 
+    print(f"🎬 RENDERING 25 FPS TACTICAL UNIT...")
     
     bg_file = get_background_image(topic)
     if bg_file:
         bg = ImageClip(bg_file).set_duration(duration).resize(height=1920)
         bg = bg.crop(x1=bg.w/2-540, y1=0, x2=bg.w/2+540, y2=1920)
     else:
-        bg = ColorClip(size=(1080, 1920), color=(10, 10, 10)).set_duration(duration)
+        bg = ColorClip(size=(1080, 1920), color=(15, 15, 15)).set_duration(duration)
 
-    # עיצוב טקסט נקי וחד [cite: 2025-12-28]
-    txt = TextClip(hook.upper(), fontsize=75, color='white', font='Arial-Bold', method='caption', size=(950, None)).set_duration(duration).set_position('center')
+    txt = TextClip(insight, fontsize=65, color='white', font='Arial-Bold', method='caption', size=(950, None)).set_duration(duration).set_position('center')
     video = CompositeVideoClip([bg, txt])
     video.fps = fps
     
@@ -108,10 +127,10 @@ def create_video():
         
     output = "final_shorts.mp4"
     video.write_videofile(output, fps=fps, codec="libx264", audio_codec="aac")
-    return output, hook, desc
+    return output, insight, title
 
-def upload_to_youtube(file_path, title, description):
-    print("🚀 מעלה ליוטיוב...")
+def upload_to_youtube(file_path, insight, title):
+    print("🚀 UPLOADING TO THE LAB DATABASE...")
     try:
         config = json.loads(CLIENT_SECRET_RAW)
         creds_data = config.get('installed') or config.get('web')
@@ -121,23 +140,20 @@ def upload_to_youtube(file_path, title, description):
         )
         creds.refresh(Request())
         youtube = build("youtube", "v3", credentials=creds)
+        
+        full_desc = f"{title}\n\n{OFFICIAL_DESCRIPTION}"
+        
         body = {
-            "snippet": {"title": title[:100], "description": description + f"\n\n{GUMROAD_LINK}", "categoryId": "27"},
+            "snippet": {"title": title, "description": full_desc, "categoryId": "27"},
             "status": {"privacyStatus": "public", "selfDeclaredMadeForKids": False}
         }
         media = MediaFileUpload(file_path, chunksize=-1, resumable=True)
         youtube.videos().insert(part="snippet,status", body=body, media_body=media).execute()
-        print("✅ עלה ליוטיוב בהצלחה!")
-    except Exception as e: print(f"❌ שגיאה ביוטיוב: {e}")
-
-def upload_to_tiktok(file_path, title):
-    print("📱 שולח לטיקטוק...")
-    if not TIKTOK_TOKEN: return
-    print(f"✅ מוכן לטיקטוק עבור: {title}")
+        print("✅ MISSION SUCCESSFUL!")
+    except Exception as e: print(f"❌ DEPLOYMENT ERROR: {e}")
 
 if __name__ == "__main__":
     if all([GEMINI_KEY, REFRESH_TOKEN, CLIENT_SECRET_RAW]):
-        file, hook, desc = create_video()
-        upload_to_youtube(file, hook, desc)
-        upload_to_tiktok(file, hook)
-        print("✨ ההרצה הושלמה!")
+        file, insight, title = create_video()
+        upload_to_youtube(file, insight, title)
+        print("✨ LAB PROTOCOL COMPLETE.")
