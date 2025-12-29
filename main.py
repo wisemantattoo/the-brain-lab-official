@@ -150,7 +150,26 @@ def upload_to_youtube(file_path, insight, title):
             "status": {"privacyStatus": "public", "selfDeclaredMadeForKids": False}
         }
         media = MediaFileUpload(file_path, chunksize=-1, resumable=True)
-        youtube.videos().insert(part="snippet,status", body=body, media_body=media).execute()
+        # מבצע העלאה ושומר את התשובה כדי לקבל את ה-ID של הסרטון [cite: 2025-12-28]
+        response = youtube.videos().insert(part="snippet,status", body=body, media_body=media).execute()
+        video_id = response['id'] 
+        print(f"✅ MISSION SUCCESSFUL! Video ID: {video_id}")
+
+        # הוספת תגובה אוטומטית עם הקישור ל-Gumroad [cite: 2025-12-28]
+        youtube.commentThreads().insert(
+            part="snippet",
+            body={
+                "snippet": {
+                    "videoId": video_id,
+                    "topLevelComment": {
+                        "snippet": {
+                            "textOriginal": f"⚡ Get Started with Protocol #001: Download our official Morning Protocol here: {GUMROAD_LINK}"
+                        }
+                    }
+                }
+            }
+        ).execute()
+        print("💬 AUTOMATIC COMMENT DEPLOYED.")
         print("✅ MISSION SUCCESSFUL!")
     except Exception as e: print(f"❌ DEPLOYMENT ERROR: {e}")
 
