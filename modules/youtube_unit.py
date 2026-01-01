@@ -5,8 +5,8 @@ from googleapiclient.http import MediaFileUpload
 from google.auth.transport.requests import Request
 from modules.config import SECRETS, GUMROAD_LINK, OFFICIAL_DESCRIPTION
 
-def deploy_to_youtube(file_path, title):
-    """העלאה והזרקת תגובה לחיצה [cite: 2026-01-01]."""
+def deploy_to_youtube(file_path, title, guide):
+    """העלאה ליוטיוב עם מדריך טקטי בתיאור [cite: 2026-01-01]."""
     print("🚀 DEPLOYING TO YOUTUBE...")
     try:
         config = json.loads(SECRETS["CLIENT_SECRET_RAW"])
@@ -19,7 +19,9 @@ def deploy_to_youtube(file_path, title):
         creds.refresh(Request())
         youtube = build("youtube", "v3", credentials=creds)
         
-        full_desc = f"{title}\n\n{OFFICIAL_DESCRIPTION}"
+        # שילוב המדריך המעשי יחד עם החתימה הרשמית [cite: 2026-01-01]
+        full_desc = f"{guide}\n\n{OFFICIAL_DESCRIPTION}"
+        
         body = {
             "snippet": {"title": title, "description": full_desc, "categoryId": "27"},
             "status": {"privacyStatus": "public", "selfDeclaredMadeForKids": False}
@@ -28,24 +30,15 @@ def deploy_to_youtube(file_path, title):
         media = MediaFileUpload(file_path, chunksize=-1, resumable=True)
         response = youtube.videos().insert(part="snippet,status", body=body, media_body=media).execute()
         video_id = response['id'] 
-        print(f"✅ UPLOAD SUCCESSFUL! ID: {video_id}")
-
-        # התיקון: שימוש ב-textOriginal במקום textDisplay כדי למנוע את שגיאת 400 [cite: 2026-01-01]
+        
+        # תגובה לחיצה אוטומטית [cite: 2026-01-01]
         youtube.commentThreads().insert(
             part="snippet",
-            body={
-                "snippet": {
-                    "videoId": video_id,
-                    "topLevelComment": {
-                        "snippet": {
-                            "textOriginal": f"⚡ Get Started with Protocol #001: Download our official Morning Protocol here: {GUMROAD_LINK}"
-                        }
-                    }
-                }
-            }
+            body={"snippet": {"videoId": video_id, "topLevelComment": {"snippet": {"textOriginal": f"⚡ Get Started with Protocol #001: {GUMROAD_LINK}"}}}}
         ).execute()
-        print("💬 CLICKABLE COMMENT DEPLOYED SUCCESSFULLY.")
+        
+        print(f"✅ DEPLOYED! ID: {video_id}")
         return video_id
     except Exception as e:
-        print(f"❌ YOUTUBE DEPLOYMENT ERROR: {e}")
+        print(f"❌ YOUTUBE ERROR: {e}")
         return None
