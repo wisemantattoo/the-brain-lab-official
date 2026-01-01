@@ -1,63 +1,15 @@
 import os
 import json
 import requests
-import random
-from google import genai
-from google.genai import types
-from moviepy.editor import TextClip, ColorClip, CompositeVideoClip, AudioFileClip, ImageClip
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google.auth.transport.requests import Request
+from moviepy.editor import TextClip, ColorClip, CompositeVideoClip, AudioFileClip, ImageClip
 
-# ייבוא מהכספת שלנו [cite: 2025-12-27]
+# ייבוא מהמודלים שלנו [cite: 2025-12-27]
 from modules.config import SECRETS, GUMROAD_LINK, OFFICIAL_DESCRIPTION
-
-client = genai.Client(api_key=SECRETS["GEMINI_KEY"])
-
-def get_viral_content():
-    topics = [
-        "The 4-Second Silence: Dominating high-stakes negotiations",
-        "The NLP Eye-Gaze: Planting suggestions in social settings",
-        "The Choice Architecture: Getting an 'Easy Yes' at work",
-        "The Baseline Method: Spotting lies in daily conversations",
-        "The Hidden Command: Subliminal influence in meetings",
-        "The Stress Leak: Reading a person's true intent instantly",
-        "The Pacing Protocol: Hijacking the rhythm of any room",
-        "The Visual Interest Read: Detecting attraction or boredom",
-        "The Focus Misdirection: Moving attention like a pro mentalist",
-        "The Power Identity: Biologically adopting high-status body language",
-        "The Exit Intent: Reading feet to know when someone wants to leave",
-        "The Compliance Ladder: Getting major favors through small 'Yes' moves"
-    ]
-    selected_topic = random.choice(topics)
-    print(f"🧠 ACTIVATING ACCESSIBLE DNA: {selected_topic}...")
-
-    instruction = """
-    IDENTITY: You are the Lead Strategist for 'The Brain Lab'. You leak psychological protocols for the EVERYDAY civilian.
-    THE "ACCESSIBILITY" RULES:
-    1. STREET SMART: Apply tactics to work, dating, and social life.
-    2. THE "YOU" FACTOR: Explain how this helps the viewer GET money, status, or respect.
-    3. ANTI-ACADEMIC: No science talk. Actionable intelligence only.
-    """
-    
-    try:
-        response = client.models.generate_content(
-            model="gemini-flash-latest", 
-            config=types.GenerateContentConfig(system_instruction=instruction, temperature=0.7),
-            contents=f"Translate this protocol for a general audience: {selected_topic}"
-        )
-        full_text = response.text.strip()
-        
-        if "---TITLE:" in full_text and "---INSIGHT:" in full_text:
-            title = full_text.split("---TITLE:")[1].split("---INSIGHT:")[0].strip()
-            insight = full_text.split("---INSIGHT:")[1].strip()
-        else:
-            title = "Power Protocol"; insight = "Use silence to gain the upper hand"
-        
-        return " ".join(insight.split()[:10]).upper(), " ".join(title.split()[:10]), selected_topic
-    except Exception as e:
-        return "SILENCE IS POWER: WAIT 4 SECONDS", "Strategic Silence", selected_topic
+from modules.ai_brain import get_viral_content
 
 def get_background_image(query):
     try:
@@ -68,10 +20,10 @@ def get_background_image(query):
     except: return None
 
 def create_video():
-    insight, title, topic = get_viral_content()
-    fps = 25 # הגדרת משתמש [cite: 2025-12-23]
+    insight, title, topic = get_viral_content() # נקרא כעת מהמודול
+    fps = 25 # מוגדר לפי דרישת המשתמש [cite: 2025-12-23]
     duration = 8 
-    print(f"🎬 RENDERING V1.1 UNIT...")
+    print(f"🎬 RENDERING V1.1 ACCESSIBLE UNIT...")
     
     bg_file = get_background_image(topic)
     bg = ImageClip(bg_file).set_duration(duration).resize(height=1920).crop(x1=0, y1=0, x2=1080, y2=1920) if bg_file else ColorClip(size=(1080, 1920), color=(15, 15, 15)).set_duration(duration)
@@ -94,9 +46,10 @@ def upload_to_youtube(file_path, insight, title):
         creds.refresh(Request())
         youtube = build("youtube", "v3", credentials=creds)
         
+        # העלאה עם תיאור רשמי
         response = youtube.videos().insert(part="snippet,status", body={"snippet": {"title": title, "description": f"{title}\n\n{OFFICIAL_DESCRIPTION}", "categoryId": "27"}, "status": {"privacyStatus": "public", "selfDeclaredMadeForKids": False}}, media_body=MediaFileUpload(file_path, chunksize=-1, resumable=True)).execute()
         
-        # התיקון הקריטי ללינק לחיץ [cite: 2026-01-01]
+        # תגובה לחיצה (textDisplay) [cite: 2026-01-01]
         youtube.commentThreads().insert(part="snippet", body={"snippet": {"videoId": response['id'], "topLevelComment": {"snippet": {"textDisplay": f"⚡ Get Started with Protocol #001: Download our official Morning Protocol here: {GUMROAD_LINK}"}}}}).execute()
         print("💬 CLICKABLE COMMENT DEPLOYED.")
     except Exception as e: print(f"❌ DEPLOYMENT ERROR: {e}")
@@ -105,4 +58,4 @@ if __name__ == "__main__":
     if all([SECRETS["GEMINI_KEY"], SECRETS["REFRESH_TOKEN"], SECRETS["CLIENT_SECRET_RAW"]]):
         file, insight, title = create_video()
         upload_to_youtube(file, insight, title)
-        print("✨ ACCESSIBLE UNIT MISSION COMPLETE.")
+        print("✨ ACCESSIBLE DNA UNIT MISSION COMPLETE.")
