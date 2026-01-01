@@ -18,6 +18,7 @@ REFRESH_TOKEN = os.environ.get("YOUTUBE_REFRESH_TOKEN")
 TIKTOK_TOKEN = os.environ.get("TIKTOK_ACCESS_TOKEN")
 GUMROAD_LINK = "https://thebrainlabofficial.gumroad.com/l/vioono"
 
+# שימוש במודל המנצח ששמור בזיכרון
 client = genai.Client(api_key=GEMINI_KEY)
 
 OFFICIAL_DESCRIPTION = """Welcome to The Brain Lab. 🧠
@@ -30,7 +31,7 @@ We decode the human mind, one fact at a time. Our mission is to provide you with
 Subscribe to join the experiment and start decoding your mind."""
 
 def get_viral_content():
-    # 12 הפרוטוקולים החדשים: NLP, שב"כ ומנטליזם [cite: 2025-12-28]
+    # 12 הפרוטוקולים של ה-DNA החדש (NLP, שב"כ, מנטליזם) [cite: 2025-12-28]
     topics = [
         "The Interrogator’s Silence: Truth extraction via 4-second pauses",
         "The 'Left Eye' Dominance: NLP command planting via gaze",
@@ -48,7 +49,7 @@ def get_viral_content():
     selected_topic = random.choice(topics)
     print(f"🧠 ACTIVATING FIELD PROFILER DNA: {selected_topic}...")
 
-    # הנחיות המערכת החדשות: ללא אקדמיה, רק שטח [cite: 2025-12-28]
+    # DNA מעודכן: אנטי-אקדמי, שפה טקטית מהשטח [cite: 2025-12-28]
     instruction = """
     IDENTITY: You are a Tactical Profiler for 'The Brain Lab'. You don't teach science; you leak intelligence protocols.
     
@@ -71,33 +72,34 @@ def get_viral_content():
                 system_instruction=instruction, 
                 temperature=0.7
             ),
-            contents=f"Execute an intelligence briefing on: {selected_topic}"
+            contents=f"Extract a tactical psychological protocol from the topic: {selected_topic}"
         )
         
         full_text = response.text.strip()
-        print(f"\n--- INTELLIGENCE BRIEFING ---\n{full_text}\n-------------------")
+        print(f"\n--- LAB ANALYSIS ---\n{full_text}\n-------------------")
         
-        # פירוק הטקסט בצורה בטוחה
+        # חילוץ חכם של התובנה הטקטית (בדיוק לפי הקוד הקודם שעבד) [cite: 2025-12-28]
         if "---TITLE:" in full_text and "---INSIGHT:" in full_text:
             title = full_text.split("---TITLE:")[1].split("---INSIGHT:")[0].strip()
             insight = full_text.split("---INSIGHT:")[1].strip()
         else:
-            title = "Tactical Intelligence Protocol"
+            title = "Tactical Protocol"
             insight = "Master the room with silent authority"
         
+        # ניקוי וזיקוק לוידאו
         final_insight = " ".join(insight.split()[:10]).upper()
         final_title = " ".join(title.split()[:10])
 
-        print(f"✨ FIELD SIGNAL READY: {final_insight}")
+        print(f"✨ TACTICAL INSIGHT READY: {final_insight}")
         return final_insight, final_title, selected_topic
     
     except Exception as e:
         print(f"❌ PROTOCOL ERROR: {e}")
-        return "SILENCE IS POWER: WAIT 4 SECONDS", "Strategic Silence", selected_topic
+        return "LOSS AVERSION: WE FEAR LOSS MORE THAN GAIN", "Brain Economics", selected_topic
 
 def get_background_image(query):
     try:
-        url = f"https://api.unsplash.com/photos/random?query={query},dark,cinematic,minimalist&orientation=portrait&client_id={UNSPLASH_KEY}"
+        url = f"https://api.unsplash.com/photos/random?query={query},minimalist,intelligence&orientation=portrait&client_id={UNSPLASH_KEY}"
         res = requests.get(url).json()
         img_url = res['urls']['regular']
         with open("bg.jpg", 'wb') as f: f.write(requests.get(img_url).content)
@@ -108,7 +110,7 @@ def create_video():
     insight, title, topic = get_viral_content()
     fps = 25 # מוגדר לפי דרישת המשתמש [cite: 2025-12-23]
     duration = 8 
-    print(f"🎬 RENDERING 25 FPS TACTICAL UNIT...")
+    print(f"🎬 RENDERING TACTICAL SHORT...")
     
     bg_file = get_background_image(topic)
     if bg_file:
@@ -130,7 +132,7 @@ def create_video():
     return output, insight, title
 
 def upload_to_youtube(file_path, insight, title):
-    print("🚀 UPLOADING TO THE LAB DATABASE...")
+    print("🚀 UPLOADING PROTOCOL...")
     try:
         config = json.loads(CLIENT_SECRET_RAW)
         creds_data = config.get('installed') or config.get('web')
@@ -148,7 +150,26 @@ def upload_to_youtube(file_path, insight, title):
             "status": {"privacyStatus": "public", "selfDeclaredMadeForKids": False}
         }
         media = MediaFileUpload(file_path, chunksize=-1, resumable=True)
-        youtube.videos().insert(part="snippet,status", body=body, media_body=media).execute()
+        # מבצע העלאה ושומר את התשובה כדי לקבל את ה-ID של הסרטון [cite: 2025-12-28]
+        response = youtube.videos().insert(part="snippet,status", body=body, media_body=media).execute()
+        video_id = response['id'] 
+        print(f"✅ MISSION SUCCESSFUL! Video ID: {video_id}")
+
+        # הוספת תגובה אוטומטית עם הקישור ל-Gumroad [cite: 2025-12-28]
+        youtube.commentThreads().insert(
+            part="snippet",
+            body={
+                "snippet": {
+                    "videoId": video_id,
+                    "topLevelComment": {
+                        "snippet": {
+                            "textOriginal": f"⚡ Get Started with Protocol #001: Download our official Morning Protocol here: {GUMROAD_LINK}"
+                        }
+                    }
+                }
+            }
+        ).execute()
+        print("💬 AUTOMATIC COMMENT DEPLOYED.")
         print("✅ MISSION SUCCESSFUL!")
     except Exception as e: print(f"❌ DEPLOYMENT ERROR: {e}")
 
@@ -156,4 +177,4 @@ if __name__ == "__main__":
     if all([GEMINI_KEY, REFRESH_TOKEN, CLIENT_SECRET_RAW]):
         file, insight, title = create_video()
         upload_to_youtube(file, insight, title)
-        print("✨ LAB PROTOCOL COMPLETE.")
+        print("✨ TACTICAL UNIT COMPLETE.")

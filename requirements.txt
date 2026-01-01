@@ -1,5 +1,9 @@
+google-genai>=1.0.0
 moviepy==1.0.3
-google-api-python-client
+requests
+google-auth
 google-auth-oauthlib
 google-auth-httplib2
-google-generativeai
+google-api-python-client
+Pillow==9.5.0
+opencv-python
