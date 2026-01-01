@@ -3,67 +3,58 @@ from google import genai
 from google.genai import types
 from modules.config import SECRETS
 
-# אתחול הלקוח [cite: 2025-12-28]
 client = genai.Client(api_key=SECRETS["GEMINI_KEY"])
 
 def get_viral_content():
     """
-    יחידת הפרופיילר v1.2: סינתזה של פסיכולוגיה אקדמית ותובנות כוח ושיפור עצמי [cite: 2026-01-01].
-    מבוסס על: כהנמן, גרין, היל, רואיס, רובינס ובראון.
+    יחידת הפרופיילר v1.4: מודל Hook & Protocol.
+    מייצר כותרת עצירה (Hook) למסך ומדריך הפעלה (Guide) לתיאור [cite: 2026-01-01].
     """
-    
-    # 1. רשימת נושאים מבוססת זהב ספרותי ואקדמי [cite: 2026-01-01]
+    # נושאי הזהב מתוך הספרים שאתה אוהב [cite: 2026-01-01]
     topics = [
-        "Kahneman’s Loss Aversion: Why the fear of losing prevents your social growth",
-        "Hill’s Auto-suggestion: Rewiring your self-talk for professional dominance",
-        "Brené Brown’s Vulnerability: Using authenticity as a high-status power move",
-        "Greene’s Law 4: The tactical advantage of always saying less than necessary",
-        "Ruiz’s Second Agreement: The power of not taking rejection personally",
-        "Robbins’ Let Them Theory: Reclaiming energy by releasing others' control",
-        "Kahneman’s Peak-End Rule: Hijacking how people remember your performance",
-        "Brené Brown’s Shame Resilience: Building an unshakeable social armor",
-        "Hill’s Definiteness of Purpose: The biological impact of a single-minded goal",
-        "Greene’s Law 28: Enter action with boldness to paralyze opposition"
+        "Kahneman’s Peak-End Rule", "Hill’s Auto-suggestion", "Brené Brown’s Strategic Reveal",
+        "Greene’s Law 4", "Ruiz’s Second Agreement", "Mel Robbins’ Let Them Theory",
+        "Greene’s Law 28", "Kahneman’s Loss Aversion"
     ]
     
     selected_topic = random.choice(topics)
-    print(f"🧠 ACTIVATING SYNTHETIC DNA: {selected_topic}...")
+    print(f"🧠 ACTIVATING HOOK DNA: {selected_topic}...")
 
-    # 2. ה-Instruction החדש: הגישור בין ה"חם" ל"קר" [cite: 2026-01-01]
+    # הוראות לביצוע "עצירת נשימה" והסבר מעשי [cite: 2026-01-01]
     instruction = """
-    IDENTITY: You are the Lead Strategist for 'The Brain Lab'. 
-    MISSION: You bridge the gap between academic psychology (Kahneman) and tactical life-wisdom (Greene, Hill, Brown, Ruiz).
+    IDENTITY: Tactical Strategist for 'The Brain Lab'.
+    MISSION: Create a pattern-interrupting Short.
     
-    THE "SYNTHESIS" RULES:
-    1. THE HOOK: Start with a heavy psychological anchor (Kahneman/Academic).
-    2. THE APPLICATION: Translate it into a 'Power Move' or 'Social Update' for work, dating, or status.
-    3. THE EMOTIONAL CORE: Use the warmth of Brené Brown or Mel Robbins to make it move the viewer's heart.
-    4. LANGUAGE: English ONLY. Raw, high-impact, and cinematic.
+    RULES:
+    1. THE HOOK (for video screen): 3-5 words max. High-stakes or mysterious. NO EXPLANATION. 
+       Example: 'The 4-Second Silence Trap'.
+    2. THE GUIDE (for description): 2-3 sentences maximum. Pure tactical steps on HOW to use it tomorrow. 
+    3. LANGUAGE: English ONLY. High-impact.
     
     FORMAT:
-    ANALYSIS: [3 sentences explaining the science and how to use it as a social 'software update']
-    ---TITLE: [Viral cinematic title]
-    ---INSIGHT: [The tactical fact for the screen, 7-10 words maximum]
+    HOOK: [The 3-5 words for the screen]
+    GUIDE: [The 2-3 sentences for the description]
+    ---TITLE: [Viral YouTube Title]
     """
     
     try:
         response = client.models.generate_content(
             model="gemini-flash-latest", 
-            config=types.GenerateContentConfig(system_instruction=instruction, temperature=0.7),
-            contents=f"Synthesize an elite protocol for: {selected_topic}"
+            config=types.GenerateContentConfig(system_instruction=instruction, temperature=0.8),
+            contents=f"Generate a tactical hook and guide for: {selected_topic}"
         )
         
         full_text = response.text.strip()
         print(f"\n--- LAB ANALYSIS ---\n{full_text}\n-------------------")
         
-        if "---TITLE:" in full_text and "---INSIGHT:" in full_text:
-            title = full_text.split("---TITLE:")[1].split("---INSIGHT:")[0].strip()
-            insight = full_text.split("---INSIGHT:")[1].strip()
-        else:
-            title = "The Power Frame"; insight = "Control your reaction to control the room"
+        # חילוץ המידע לפי המבנה המודולרי החדש [cite: 2025-12-28]
+        hook = full_text.split("HOOK:")[1].split("GUIDE:")[0].strip()
+        guide = full_text.split("GUIDE:")[1].split("---TITLE:")[0].strip()
+        title = full_text.split("---TITLE:")[1].strip()
         
-        return " ".join(insight.split()[:10]).upper(), " ".join(title.split()[:10]), selected_topic
+        # מחזיר בדיוק את מה שה-main.py מצפה לקבל [cite: 2026-01-01]
+        return hook.upper(), title, guide
     
     except Exception as e:
         print(f"❌ AI BRAIN ERROR: {e}")
-        return "STAY BOLD: ACTION CURES ALL FEAR", "The Boldness Protocol", selected_topic
+        return "THE SILENCE TRAP", "Strategic Silence", "Wait 4 seconds. Silence is power."
