@@ -30,7 +30,7 @@ def deploy_to_youtube(file_path, title):
         video_id = response['id'] 
         print(f"✅ UPLOAD SUCCESSFUL! ID: {video_id}")
 
-        # הזרקת הלינק הלחיץ (Clickable) [cite: 2026-01-01]
+        # התיקון: שימוש ב-textOriginal במקום textDisplay כדי למנוע את שגיאת 400 [cite: 2026-01-01]
         youtube.commentThreads().insert(
             part="snippet",
             body={
@@ -38,13 +38,13 @@ def deploy_to_youtube(file_path, title):
                     "videoId": video_id,
                     "topLevelComment": {
                         "snippet": {
-                            "textDisplay": f"⚡ Get Started with Protocol #001: Download our official Morning Protocol here: {GUMROAD_LINK}"
+                            "textOriginal": f"⚡ Get Started with Protocol #001: Download our official Morning Protocol here: {GUMROAD_LINK}"
                         }
                     }
                 }
             }
         ).execute()
-        print("💬 CLICKABLE COMMENT DEPLOYED.")
+        print("💬 CLICKABLE COMMENT DEPLOYED SUCCESSFULLY.")
         return video_id
     except Exception as e:
         print(f"❌ YOUTUBE DEPLOYMENT ERROR: {e}")
