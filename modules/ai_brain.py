@@ -7,29 +7,34 @@ client = genai.Client(api_key=SECRETS["GEMINI_KEY"])
 
 def get_viral_content():
     """
-    יחידת הפרופיילר v1.4: מודל Hook & Protocol.
-    מייצר כותרת עצירה (Hook) למסך ומדריך הפעלה (Guide) לתיאור [cite: 2026-01-01].
+    יחידת הפרופיילר v2.0: מודל Infinite Discovery.
+    ה-AI סורק את מאגר הידע העולמי ושולף מחקר או תופעה מפתיעה בכל פעם [cite: 2026-01-01].
     """
-    # נושאי הזהב מתוך הספרים שאתה אוהב [cite: 2026-01-01]
-    topics = [
-        "Kahneman’s Peak-End Rule", "Hill’s Auto-suggestion", "Brené Brown’s Strategic Reveal",
-        "Greene’s Law 4", "Ruiz’s Second Agreement", "Mel Robbins’ Let Them Theory",
-        "Greene’s Law 28", "Kahneman’s Loss Aversion"
+    
+    domains = [
+        "Behavioral Economics (Nudge theory, Decision making)",
+        "Social Psychology (Influence, Conformity, Group dynamics)",
+        "Neuroscience (Dopamine loops, Brain plasticity, Stress response)",
+        "Dark Psychology (Manipulation detection, Body language, FBI tactics)",
+        "Evolutionary Psychology (Survival instincts, Status seeking, Attraction)",
+        "Cognitive Biases (Kahneman/Tversky expanded research)",
+        "Peak Performance (Flow state, Atomic habits, Mental toughness)"
     ]
     
-    selected_topic = random.choice(topics)
-    print(f"🧠 ACTIVATING HOOK DNA: {selected_topic}...")
+    selected_domain = random.choice(domains)
+    print(f"🧠 SEARCHING INFINITE ARCHIVE: {selected_domain}...")
 
-    # הוראות לביצוע "עצירת נשימה" והסבר מעשי [cite: 2026-01-01]
-    instruction = """
-    IDENTITY: Tactical Strategist for 'The Brain Lab'.
-    MISSION: Create a pattern-interrupting Short.
+    instruction = f"""
+    IDENTITY: Chief Researcher for 'The Brain Lab'.
+    MISSION: Discover an obscure but high-impact psychological study, academic concept, or human behavior protocol.
+    SOURCE DOMAIN: {selected_domain}
     
     RULES:
-    1. THE HOOK (for video screen): 3-5 words max. High-stakes or mysterious. NO EXPLANATION. 
-       Example: 'The 4-Second Silence Trap'.
-    2. THE GUIDE (for description): 2-3 sentences maximum. Pure tactical steps on HOW to use it tomorrow. 
-    3. LANGUAGE: English ONLY. High-impact.
+    1. DISCOVERY: Find something specific and surprising. Don't repeat common knowledge. 
+    2. THE HOOK (Video): 3-5 words max. High-stakes or mysterious. 
+    3. THE GUIDE (Description): 2-3 sentences. A raw, actionable 'Social Software Update' based on the research.
+    4. AUTHORITY: Mention the researcher, study name, or book (e.g., 'Cialdini’s rule', 'The Stanford effect').
+    5. LANGUAGE: English ONLY. High-impact.
     
     FORMAT:
     HOOK: [The 3-5 words for the screen]
@@ -40,21 +45,19 @@ def get_viral_content():
     try:
         response = client.models.generate_content(
             model="gemini-flash-latest", 
-            config=types.GenerateContentConfig(system_instruction=instruction, temperature=0.8),
-            contents=f"Generate a tactical hook and guide for: {selected_topic}"
+            config=types.GenerateContentConfig(system_instruction=instruction, temperature=0.9),
+            contents="Execute an intelligence briefing on a new, surprising discovery."
         )
         
         full_text = response.text.strip()
-        print(f"\n--- LAB ANALYSIS ---\n{full_text}\n-------------------")
+        print(f"\n--- DISCOVERY BRIEFING ---\n{full_text}\n-------------------")
         
-        # חילוץ המידע לפי המבנה המודולרי החדש [cite: 2025-12-28]
         hook = full_text.split("HOOK:")[1].split("GUIDE:")[0].strip()
         guide = full_text.split("GUIDE:")[1].split("---TITLE:")[0].strip()
         title = full_text.split("---TITLE:")[1].strip()
         
-        # מחזיר בדיוק את מה שה-main.py מצפה לקבל [cite: 2026-01-01]
         return hook.upper(), title, guide
     
     except Exception as e:
         print(f"❌ AI BRAIN ERROR: {e}")
-        return "THE SILENCE TRAP", "Strategic Silence", "Wait 4 seconds. Silence is power."
+        return "THE POWER OF SILENCE", "Strategic Silence", "Wait 4 seconds before reacting to gain dominance."
