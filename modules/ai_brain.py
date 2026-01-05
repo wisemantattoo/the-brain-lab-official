@@ -3,13 +3,14 @@ from google import genai
 from google.genai import types
 from modules.config import SECRETS
 
-client = genai.Client(api_key=SECRETS["GEMINI_KEY"])
-
 def get_viral_content():
     """
     יחידת הפרופיילר v2.0: מודל Infinite Discovery.
     ה-AI סורק את מאגר הידע העולמי ושולף מחקר או תופעה מפתיעה בכל פעם [cite: 2026-01-01].
     """
+    
+    # אתחול הלקוח בתוך הפונקציה למניעת קריסה בזמן הטעינה (Import) [cite: 2026-01-05]
+    client = genai.Client(api_key=SECRETS["GEMINI_API_KEY"])
     
     domains = [
         "Behavioral Economics (Nudge theory, Decision making)",
@@ -43,8 +44,9 @@ def get_viral_content():
     """
     
     try:
+        # שימוש במודל החושב החדש שחיברנו [cite: 2026-01-01, 2026-01-05]
         response = client.models.generate_content(
-            model="gemini-flash-latest", 
+            model="gemini-2.0-flash-thinking-exp-1219", 
             config=types.GenerateContentConfig(system_instruction=instruction, temperature=0.9),
             contents="Execute an intelligence briefing on a new, surprising discovery."
         )
