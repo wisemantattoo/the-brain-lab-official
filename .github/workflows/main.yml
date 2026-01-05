@@ -16,26 +16,39 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11' # שדרוג ל-3.11 לפי המלצת גוגל למניעת שגיאות תמיכה
+          python-version: '3.11'
           cache: 'pip'
 
       - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y imagemagick libgl1
-          sudo sed -i 's/policy domain="path" rights="none" pattern="@\*"/policy domain="path" rights="read|write" pattern="@\*"/g' /etc/ImageMagick-6/policy.xml
+          # תיקון ImageMagick policy לשתי גרסאות אפשריות
+          for policy in /etc/ImageMagick-*/policy.xml; do
+            if [ -f "$policy" ]; then
+              sudo sed -i 's/rights="none"/rights="read|write"/g' "$policy"
+            fi
+          done
 
       - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
-          # החלפנו את google-generativeai ב-google-genai כדי לתמוך במודל החשיבה ובספרייה החדשה
           pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client moviepy==1.0.3 requests Pillow==9.5.0 google-genai opencv-python
 
       - name: Run Bot
         env:
-          CLIENT_SECRET_JSON: ${{ secrets.CLIENT_SECRET_JSON }}
-          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
-          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+          # Google AI
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
+          
+          # YouTube OAuth - המפתחות החדשים! [FIXED: 2026-01-05]
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          
+          # Media
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+          
+          # TikTok
+          TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
+          TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
         run: python main.py
