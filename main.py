@@ -4,8 +4,8 @@ from modules.video_lab import create_video
 from modules.youtube_unit import deploy_to_youtube
 
 def run_lab_mission():
-    # בדיקה שכל 4 המפתחות הקריטיים קיימים ב-GitHub Secrets לפני תחילת המשימה [cite: 2026-01-05]
-    required_keys = ["GEMINI_KEY", "REFRESH_TOKEN", "CLIENT_ID", "CLIENT_SECRET"]
+    # התאמה מדויקת לשמות הסודות שהגדרת ב-GitHub Codespaces [cite: 2026-01-05]
+    required_keys = ["GEMINI_API_KEY", "YOUTUBE_REFRESH_TOKEN", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"]
     
     if not all(SECRETS.get(key) for key in required_keys):
         print("❌ ERROR: Missing YouTube OAuth credentials in GitHub Secrets.")
