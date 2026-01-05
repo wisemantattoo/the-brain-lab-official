@@ -1,18 +1,3 @@
-# AI & Video
-streamlit>=1.28.0
-pandas>=2.0.0
-plotly>=5.17.0
-requests>=2.31.0
-Pillow==9.5.0
-opencv-python>=4.8.0
-
-# YouTube API
-google-auth>=2.23.0
-google-auth-oauthlib>=1.1.0
-google-auth-httplib2>=0.1.1
-google-api-python-client>=2.100.0
-
-# Dashboard & Analytics (NEW!)
 streamlit>=1.28.0
 pandas>=2.0.0
 plotly>=5.17.0
