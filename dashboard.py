@@ -18,6 +18,19 @@ from modules.database import (
 )
 from modules.analytics import get_all_insights, get_performance_summary
 
+# ייבוא מודול נתוני דמו
+try:
+    from init_demo_data import check_if_demo_needed, create_demo_videos
+    
+    # יצירת נתוני דמו אם צריך (רק בפעם הראשונה)
+    if check_if_demo_needed():
+        with st.spinner("🎬 Creating demo data for the first time..."):
+            create_demo_videos()
+            st.success("✅ Demo data created! Refresh the page.")
+            st.rerun()
+except Exception as e:
+    st.warning(f"⚠️ Could not load demo data: {e}")
+
 # הגדרות עמוד
 st.set_page_config(
     page_title="The Brain Lab Dashboard",
@@ -86,7 +99,7 @@ if page == "📊 Overview":
         st.metric(
             "Best Performer",
             best['hook'][:20] + "..." if len(best['hook']) > 20 else best['hook'],
-            delta=f"{best['views']} views"
+            delta=f"↑ {best['views']} views"
         )
     
     st.markdown("---")
@@ -168,7 +181,10 @@ elif page == "🏆 Top Performers":
                 
                 with col4:
                     st.markdown(f"🎯 *{video['domain'] or 'Unknown'}*")
-                    st.markdown(f"[Watch →](https://youtube.com/shorts/{video['video_id']})")
+                    if not video['video_id'].startswith('DEMO_'):
+                        st.markdown(f"[Watch →](https://youtube.com/shorts/{video['video_id']})")
+                    else:
+                        st.caption("📊 Demo Video")
                 
                 st.markdown("---")
     else:
@@ -321,7 +337,10 @@ elif page == "📈 All Videos":
                     st.markdown(f"**Title:** {video['title']}")
                     st.markdown(f"**Domain:** {video['domain'] or 'N/A'}")
                     st.markdown(f"**Created:** {video['created_at']}")
-                    st.markdown(f"[Watch on YouTube →](https://youtube.com/shorts/{video['video_id']})")
+                    if not video['video_id'].startswith('DEMO_'):
+                        st.markdown(f"[Watch on YouTube →](https://youtube.com/shorts/{video['video_id']})")
+                    else:
+                        st.info("📊 This is demo data")
                 
                 with col2:
                     st.metric("Views", video['views'])
@@ -334,3 +353,4 @@ elif page == "📈 All Videos":
 # Footer
 st.markdown("---")
 st.caption("🧠 The Brain Lab Dashboard v1.0 | Data updates in real-time")
+st.caption("📊 Demo mode - showing sample data")
