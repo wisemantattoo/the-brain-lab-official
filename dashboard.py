@@ -8,6 +8,8 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
+import os
+import time
 from modules.database import (
     get_all_videos, 
     get_top_performers, 
@@ -395,6 +397,48 @@ elif page == "🔄 Sync YouTube":
     
     st.markdown("---")
     
+    # כפתור מחיקת דמו
+    st.subheader("🗑️ Delete Demo Data")
+    
+    st.warning("""
+    ⚠️ This will permanently delete all demo videos (30 videos with DEMO_ prefix).
+    Only your real YouTube videos will remain.
+    """)
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        if st.button("🗑️ Delete All Demo Videos", type="secondary", use_container_width=True, key="delete_demo_button"):
+            try:
+                import sqlite3
+                
+                DB_PATH = "brain_lab.db"
+                
+                conn = sqlite3.connect(DB_PATH)
+                c = conn.cursor()
+                
+                c.execute("SELECT COUNT(*) FROM videos WHERE video_id LIKE 'DEMO_%'")
+                demo_count = c.fetchone()[0]
+                
+                if demo_count == 0:
+                    st.info("✅ No demo data found!")
+                else:
+                    c.execute("DELETE FROM videos WHERE video_id LIKE 'DEMO_%'")
+                    c.execute("DELETE FROM performance_history WHERE video_id LIKE 'DEMO_%'")
+                    
+                    conn.commit()
+                    conn.close()
+                    
+                    st.success(f"✅ Deleted {demo_count} demo videos!")
+                    st.balloons()
+                    time.sleep(1)
+                    st.rerun()
+            
+            except Exception as e:
+                st.error(f"❌ Error deleting demo data: {e}")
+    
+    st.markdown("---")
+    
     # הצגת מידע על API Keys
     with st.expander("🔑 API Configuration"):
         try:
@@ -417,6 +461,54 @@ elif page == "🔄 Sync YouTube":
         
         except Exception as e:
             st.error("❌ Could not check secrets configuration")
+    
+    # אפשרות למחוק נתוני דמו
+    st.markdown("---")
+    
+    with st.expander("🗑️ Delete Demo Data"):
+        st.warning("""
+        ⚠️ **Warning:** This will permanently delete all demo videos from the database.
+        
+        Only real videos from your YouTube channel will remain.
+        """)
+        
+        col1, col2, col3 = st.columns([1, 2, 1])
+        
+        with col2:
+            if st.button("🗑️ Delete All Demo Data", type="secondary", use_container_width=True):
+                try:
+                    import sqlite3
+                    
+                    DB_PATH = "brain_lab.db"
+                    
+                    if os.path.exists(DB_PATH):
+                        conn = sqlite3.connect(DB_PATH)
+                        c = conn.cursor()
+                        
+                        # ספירת דמו
+                        c.execute("SELECT COUNT(*) FROM videos WHERE video_id LIKE 'DEMO_%'")
+                        demo_count = c.fetchone()[0]
+                        
+                        if demo_count > 0:
+                            # מחיקה
+                            c.execute("DELETE FROM videos WHERE video_id LIKE 'DEMO_%'")
+                            c.execute("DELETE FROM performance_history WHERE video_id LIKE 'DEMO_%'")
+                            
+                            conn.commit()
+                            conn.close()
+                            
+                            st.success(f"✅ Deleted {demo_count} demo videos!")
+                            st.balloons()
+                            
+                            time.sleep(1)
+                            st.rerun()
+                        else:
+                            st.info("✅ No demo data found!")
+                    else:
+                        st.error("❌ Database not found")
+                
+                except Exception as e:
+                    st.error(f"❌ Error: {e}")
 
 # Footer
 st.markdown("---")
