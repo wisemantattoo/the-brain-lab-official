@@ -1,143 +1,245 @@
 """
-סקריפט למשיכת כל הוידאואים מיוטיוב ושמירה ב-database.
-להרצה: python3 sync_youtube.py
+🎬 YouTube Data Sync - The Brain Lab
+מושך נתונים אמיתיים מהערוץ ביוטיוב ומעדכן את הדאשבורד
 """
 
+import streamlit as st
 from googleapiclient.discovery import build
-from modules.database import init_database, save_video, update_video_stats
-import re
+from datetime import datetime
+from modules.database import save_video, update_video_stats
+import time
 
-# ה-API Key הציבורי של YouTube (לא צריך OAuth לקריאה!)
-YOUTUBE_API_KEY = "AIzaSyAa8yW_M1g_rkDdKQ8GkZd4G6dOqB9vu9M"  # זה key ציבורי לדוגמה
-CHANNEL_ID = "UC1d1tnZCzVEc2AJJowHh3bw"  # ה-Channel ID שלך
-
-def extract_hook_from_title(title):
+def get_youtube_service():
     """
-    מנסה לחלץ את ה-Hook מהכותרת.
-    לדוגמה: "THE NEGATIVE WEIGHT: Secret Tactic..." → "THE NEGATIVE WEIGHT"
+    יוצר חיבור ל-YouTube API
     """
-    # חיפוש של "THE [משהו]:" או עד הנקודתיים הראשונות
-    match = re.match(r'^(THE [^:]+)', title, re.IGNORECASE)
-    if match:
-        return match.group(1).strip().upper()
-    
-    # אם אין נקודתיים, קח את 3-5 המילים הראשונות
-    words = title.split()
-    if len(words) >= 3:
-        return ' '.join(words[:min(5, len(words))]).upper()
-    
-    return title[:50].upper()  # fallback
-
-
-def identify_domain_from_text(text):
-    """מזהה domain על בסיס מילות מפתח"""
-    text_lower = text.lower()
-    
-    domain_keywords = {
-        "Neuroscience": ["brain", "neuroscience", "pupil", "dopamine", "neural", "cognitive"],
-        "Body Language": ["eye", "gaze", "body", "neck", "gesture", "flex", "posture"],
-        "Dark Psychology": ["manipulation", "fbi", "interrogation", "detect", "lie", "deception"],
-        "Social Psychology": ["social", "influence", "persuasion", "cialdini", "conformity"],
-        "Vulnerability": ["vulnerability", "brown", "authentic", "boundary", "reveal"],
-        "Cognitive Bias": ["bias", "kahneman", "thinking", "glitch", "error", "fallacy"],
-        "Behavioral Economics": ["behavioral", "economics", "nudge", "choice", "decision"],
-        "Peak Performance": ["performance", "focus", "flow", "habit", "productivity"]
-    }
-    
-    for domain, keywords in domain_keywords.items():
-        if any(keyword in text_lower for keyword in keywords):
-            return domain
-    
-    return "General Psychology"
-
-
-def sync_youtube_to_database():
-    """
-    משיכת כל הוידאואים מיוטיוב ושמירה ב-database.
-    """
-    print("🔄 Starting YouTube sync...")
-    
-    # אתחול database
-    init_database()
-    
     try:
-        # בניית YouTube API client (ללא אימות!)
-        youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
+        API_KEY = st.secrets["YOUTUBE_API_KEY"]
+        youtube = build('youtube', 'v3', developerKey=API_KEY)
+        return youtube
+    except Exception as e:
+        st.error(f"❌ Failed to connect to YouTube API: {e}")
+        return None
+
+
+def get_channel_videos(youtube, channel_id, max_results=50):
+    """
+    מושך את כל הסרטונים מהערוץ
+    """
+    try:
+        videos = []
         
-        # משיכת כל הוידאואים מהערוץ
-        print(f"📺 Fetching videos from channel: {CHANNEL_ID}")
+        # קבלת uploads playlist ID
+        channel_response = youtube.channels().list(
+            part='contentDetails',
+            id=channel_id
+        ).execute()
         
-        request = youtube.search().list(
-            part="id,snippet",
-            channelId=CHANNEL_ID,
-            maxResults=50,  # מקסימום 50 וידאואים
-            order="date",
-            type="video"
-        )
+        if not channel_response['items']:
+            st.warning("⚠️ No channel found with this ID")
+            return []
         
-        response = request.execute()
+        uploads_playlist_id = channel_response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
         
-        if not response.get('items'):
-            print("❌ No videos found on channel!")
-            return
+        # משיכת כל הסרטונים
+        next_page_token = None
         
-        print(f"✅ Found {len(response['items'])} videos")
-        
-        # עיבוד כל וידאו
-        for item in response['items']:
-            video_id = item['id']['videoId']
-            snippet = item['snippet']
-            title = snippet['title']
-            description = snippet.get('description', '')
+        while True:
+            playlist_response = youtube.playlistItems().list(
+                part='snippet,contentDetails',
+                playlistId=uploads_playlist_id,
+                maxResults=50,
+                pageToken=next_page_token
+            ).execute()
             
-            # חילוץ hook ו-domain
-            hook = extract_hook_from_title(title)
-            domain = identify_domain_from_text(title + " " + description)
-            
-            # חילוץ guide מהתיאור (2-3 משפטים ראשונים)
-            guide_sentences = description.split('.')[:2]
-            guide = '. '.join(guide_sentences).strip()
-            if not guide:
-                guide = "No guide available"
-            
-            print(f"\n📹 Processing: {title}")
-            print(f"   Hook: {hook}")
-            print(f"   Domain: {domain}")
-            
-            # שמירה ב-database
-            save_video(video_id, hook, title, guide, domain)
-            
-            # משיכת סטטיסטיקות
-            stats_request = youtube.videos().list(
-                part="statistics",
-                id=video_id
-            )
-            stats_response = stats_request.execute()
-            
-            if stats_response['items']:
-                stats = stats_response['items'][0]['statistics']
-                views = int(stats.get('viewCount', 0))
-                likes = int(stats.get('likeCount', 0))
-                comments = int(stats.get('commentCount', 0))
+            for item in playlist_response['items']:
+                video_id = item['contentDetails']['videoId']
+                title = item['snippet']['title']
+                published_at = item['snippet']['publishedAt']
                 
-                print(f"   📊 Views: {views}, Likes: {likes}, Comments: {comments}")
-                
-                # עדכון סטטיסטיקות
-                update_video_stats(video_id, views, likes, comments)
+                videos.append({
+                    'video_id': video_id,
+                    'title': title,
+                    'published_at': published_at
+                })
+            
+            next_page_token = playlist_response.get('nextPageToken')
+            
+            if not next_page_token or len(videos) >= max_results:
+                break
         
-        print("\n" + "="*50)
-        print("✅ Sync completed successfully!")
-        print(f"📊 Total videos synced: {len(response['items'])}")
-        print("="*50)
-        print("\n💡 Now refresh your dashboard to see the data!")
+        return videos[:max_results]
         
     except Exception as e:
-        print(f"❌ Error during sync: {e}")
-        import traceback
-        traceback.print_exc()
+        st.error(f"❌ Error fetching videos: {e}")
+        return []
+
+
+def get_video_statistics(youtube, video_ids):
+    """
+    מושך סטטיסטיקות של סרטונים (צפיות, לייקים, תגובות)
+    """
+    try:
+        # YouTube API מאפשר עד 50 IDs בבקשה אחת
+        stats = {}
+        
+        for i in range(0, len(video_ids), 50):
+            batch_ids = video_ids[i:i+50]
+            
+            response = youtube.videos().list(
+                part='statistics,snippet',
+                id=','.join(batch_ids)
+            ).execute()
+            
+            for item in response['items']:
+                video_id = item['id']
+                statistics = item['statistics']
+                snippet = item['snippet']
+                
+                stats[video_id] = {
+                    'views': int(statistics.get('viewCount', 0)),
+                    'likes': int(statistics.get('likeCount', 0)),
+                    'comments': int(statistics.get('commentCount', 0)),
+                    'description': snippet.get('description', ''),
+                    'tags': snippet.get('tags', [])
+                }
+        
+        return stats
+        
+    except Exception as e:
+        st.error(f"❌ Error fetching statistics: {e}")
+        return {}
+
+
+def extract_metadata(title, description, tags):
+    """
+    מנסה לחלץ hook, domain מהכותרת/תיאור
+    """
+    # Hook = בדרך כלל החלק הראשון של הכותרת לפני |
+    hook = title.split('|')[0].strip() if '|' in title else title[:50]
+    
+    # ניסיון לחלץ domain מהתגים או מהתיאור
+    domain = None
+    common_domains = ['זיכרון', 'למידה', 'מוח', 'פרודוקטיביות', 'נוירו', 'ריכוז']
+    
+    for tag in tags:
+        for d in common_domains:
+            if d in tag:
+                domain = tag
+                break
+        if domain:
+            break
+    
+    if not domain:
+        for d in common_domains:
+            if d in description or d in title:
+                domain = d
+                break
+    
+    return hook, domain or "כללי"
+
+
+def sync_youtube_data():
+    """
+    פונקציה ראשית לסנכרון נתונים מיוטיוב
+    """
+    st.subheader("🔄 Syncing YouTube Data...")
+    
+    # חיבור ל-API
+    youtube = get_youtube_service()
+    if not youtube:
+        return False
+    
+    try:
+        CHANNEL_ID = st.secrets["CHANNEL_ID"]
+    except:
+        st.error("❌ CHANNEL_ID not found in secrets!")
+        return False
+    
+    # Progress bar
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+    
+    # שלב 1: משיכת רשימת סרטונים
+    status_text.text("📺 Fetching videos from channel...")
+    progress_bar.progress(20)
+    
+    videos = get_channel_videos(youtube, CHANNEL_ID, max_results=50)
+    
+    if not videos:
+        st.warning("⚠️ No videos found in channel")
+        return False
+    
+    st.success(f"✅ Found {len(videos)} videos")
+    
+    # שלב 2: משיכת סטטיסטיקות
+    status_text.text("📊 Fetching video statistics...")
+    progress_bar.progress(40)
+    
+    video_ids = [v['video_id'] for v in videos]
+    stats = get_video_statistics(youtube, video_ids)
+    
+    # שלב 3: שמירה במסד נתונים
+    status_text.text("💾 Saving to database...")
+    progress_bar.progress(60)
+    
+    saved_count = 0
+    updated_count = 0
+    
+    for video in videos:
+        video_id = video['video_id']
+        title = video['title']
+        
+        if video_id in stats:
+            video_stats = stats[video_id]
+            
+            # חילוץ metadata
+            hook, domain = extract_metadata(
+                title, 
+                video_stats['description'], 
+                video_stats['tags']
+            )
+            
+            # ניסיון לשמור סרטון חדש
+            success = save_video(
+                video_id=video_id,
+                hook=hook,
+                title=title,
+                guide="Auto-synced from YouTube",
+                domain=domain
+            )
+            
+            if success:
+                saved_count += 1
+            
+            # עדכון סטטיסטיקות
+            update_video_stats(
+                video_id=video_id,
+                views=video_stats['views'],
+                likes=video_stats['likes'],
+                comments=video_stats['comments']
+            )
+            updated_count += 1
+        
+        progress_bar.progress(60 + int((40 * (updated_count / len(videos)))))
+    
+    progress_bar.progress(100)
+    status_text.text("✅ Sync completed!")
+    
+    st.success(f"""
+    🎉 **Sync Completed Successfully!**
+    
+    - 📺 Videos found: {len(videos)}
+    - 💾 New videos saved: {saved_count}
+    - 🔄 Videos updated: {updated_count}
+    """)
+    
+    return True
 
 
 if __name__ == "__main__":
-    print("🧠 The Brain Lab - YouTube Sync Tool")
-    print("="*50)
-    sync_youtube_to_database()
+    st.title("🎬 YouTube Data Sync")
+    st.markdown("---")
+    
+    if st.button("🔄 Sync Now", type="primary", use_container_width=True):
+        sync_youtube_data()
