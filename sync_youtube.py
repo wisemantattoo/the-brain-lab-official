@@ -237,9 +237,49 @@ def sync_youtube_data():
     return True
 
 
+def delete_demo_data():
+    """
+    מוחק את כל נתוני הדמו
+    """
+    try:
+        import sqlite3
+        
+        DB_PATH = "brain_lab.db"
+        
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        
+        c.execute("SELECT COUNT(*) FROM videos WHERE video_id LIKE 'DEMO_%'")
+        demo_count = c.fetchone()[0]
+        
+        if demo_count == 0:
+            st.info("✅ No demo data found!")
+            return
+        
+        c.execute("DELETE FROM videos WHERE video_id LIKE 'DEMO_%'")
+        c.execute("DELETE FROM performance_history WHERE video_id LIKE 'DEMO_%'")
+        
+        conn.commit()
+        conn.close()
+        
+        st.success(f"✅ Deleted {demo_count} demo videos!")
+        st.balloons()
+        
+    except Exception as e:
+        st.error(f"❌ Error: {e}")
+
+
 if __name__ == "__main__":
     st.title("🎬 YouTube Data Sync")
     st.markdown("---")
     
-    if st.button("🔄 Sync Now", type="primary", use_container_width=True):
-        sync_youtube_data()
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("🔄 Sync Now", type="primary", use_container_width=True):
+            sync_youtube_data()
+    
+    with col2:
+        if st.button("🗑️ Delete Demo Data", type="secondary", use_container_width=True):
+            delete_demo_data()
+            st.rerun()
