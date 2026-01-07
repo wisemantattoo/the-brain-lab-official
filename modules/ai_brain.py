@@ -3,73 +3,109 @@ from google import genai
 from google.genai import types
 from modules.config import SECRETS
 
+# ייבוא רשימת ה-hooks המוכחים
+try:
+    from winning_hooks import PROVEN_HOOKS, get_random_proven_hook
+    HOOKS_AVAILABLE = True
+except ImportError:
+    HOOKS_AVAILABLE = False
+    print("⚠️ winning_hooks.py not found, using fallback only")
+
+
 def get_viral_content():
     """
-    יחידת הפרופיילר v3.0: Data-Driven Optimization.
-    מבוסס על ניתוח של 20+ וידאואים אמיתיים [cite: 2026-01-05].
+    יחידת הפרופיילר v4.0: Data-Driven with REAL YouTube Analytics.
+    מבוסס על ניתוח 55 סרטונים אמיתיים [2026-01-07].
+    
+    אסטרטגיה:
+    - 80% מהזמן: בוחר מרשימה של 30 hooks מוכחים
+    - 20% מהזמן: AI ממציא חדש (עם כללים מחמירים)
     """
+    
+    # 80% סיכוי לבחור מהרשימה המוכחת
+    if HOOKS_AVAILABLE and random.random() < 0.8:
+        print("🎯 Selecting from PROVEN hooks library...")
+        hook, title, guide = get_random_proven_hook()
+        print(f"✅ Selected proven content: {title}")
+        return hook, title, guide
+    
+    # 20% סיכוי - AI ממציא (או fallback אם אין רשימה)
+    print("🤖 AI generating new content with strict rules...")
     
     client = genai.Client(api_key=SECRETS["GEMINI_API_KEY"])
     
-    # הנושאים שעבדו הכי טוב בפועל [cite: 2026-01-05]
-    winning_domains = [
-        "Body Language Micro-Signals (Eye dilation, Neck tension, Gaze direction)",
-        "Dark Psychology Detection (Manipulation tells, FBI interrogation tactics)",
-        "Vulnerability as Power (Brené Brown's strategic reveal tactics)",
-        "Cognitive Glitches (Kahneman's biases, Mental shortcuts)",
-        "High-Status Behavior Patterns (Power dynamics, Dominance signals)",
-        "Neuroscience Hacks (Dopamine triggers, Brain shortcuts)",
-        "Persuasion Protocols (Cialdini's principles, Influence tactics)"
-    ]
-    
-    selected_domain = random.choice(winning_domains)
-    print(f"🧠 ACTIVATING WINNING PATTERN: {selected_domain}...")
-    
-    # הוראות מבוססות דאטה אמיתית [cite: 2026-01-05]
-    instruction = f"""
+    # הכללים החדשים - מבוססים על 55 סרטונים אמיתיים!
+    instruction = """
     IDENTITY: Chief Researcher for 'The Brain Lab'.
-    MISSION: Create a viral Short based on proven patterns.
-    SOURCE DOMAIN: {selected_domain}
+    MISSION: Create viral Short based on PROVEN data from 55 real videos.
     
-    CRITICAL RULES (Based on real data analysis):
+    🔥 CRITICAL RULES (Based on REAL YouTube Analytics):
     
-    1. THE HOOK (Video Screen):
-       - MUST be 3-5 words MAXIMUM (not 6, not 7)
-       - Use THIS proven formula: "THE [POWERFUL NOUN] [ACTION VERB]"
-       - Examples of winners:
-         * "THE EYE FLEX" ✅ (70 views)
-         * "THE SINGLE FLAW EFFECT" ✅ (16 views)
-         * "THE 180-DEGREE LIE" ✅ (27 views)
-       - Avoid multi-part hooks (they fail)
+    1. THE HOOK (Video Screen Text):
+       - MUST use ONE of these PROVEN formats:
+         * "BRAIN FACT: [Short Statement]" (440 avg views - 104% better!)
+         * "PSYCHOLOGY FACT: [Short Statement]" (2,044 avg views - BEST!)
+         * "SOCIAL INTELLIGENCE: [Short Statement]" (287 avg views)
        
-    2. THE GUIDE (Description):
-       - 2 sentences ONLY
-       - Format: "[Scientific fact]. [Tactical application]."
-       - Example: "Pupils dilate 30% when viewing high-value targets. Watch for this micro-signal during negotiations to identify their true priorities."
-       - Must include ONE specific number or research reference
-       - End with actionable "how to use this"
+       - Examples that ACTUALLY WORKED:
+         * "BRAIN FACT: Fewer Friends" ✅ (part of 2,246 view video)
+         * "BRAIN FACT: Pretending Not To Care" ✅ (1,943 views)
+         * "BRAIN FACT: Sharper Dreams" ✅ (352 views)
        
-    3. THE TITLE (YouTube):
-       - Must include ONE of these proven words:
-         * "Secret" / "Protocol" / "Tactic" / "Watch This"
-       - Format: "The [Hook Name]: [Benefit/Action]"
-       - Examples:
-         * "THE EYE FLEX: Watch This To See Their Real Intent"
-         * "The Single Flaw Effect: How One Mistake Ruins Your Reputation"
+       - Hook should be 4-6 words AFTER the prefix
+       - Focus on: Smart people, Brain patterns, Intelligence signals
        
-    4. TONE:
-       - Scientific but accessible
-       - Authoritative (cite researchers when possible)
-       - Zero fluff - every word must add value
+    2. THE TITLE (YouTube Title):
+       - MUST include: [Prefix]: [Full statement] #TheBrainLab
+       - #TheBrainLab is MANDATORY (104% better performance!)
+       - Total: 8-10 words + hashtag
+       
+       - PROVEN patterns:
+         * "Brain Fact: [Intelligence trait]... #TheBrainLab"
+         * "Amazing Psychology Fact: Smart people [behavior]... #TheBrainLab"
+         * "Psychology says: [Pattern]... #TheBrainLab"
+       
+       - Examples that WORKED:
+         * "Brain Fact: Pretending not to care is the habit of someone who cares deeply... #TheBrainLab"
+         * "Amazing Psychology Fact: Smart people tend to have fewer friends than average... #TheBrainLab"
+       
+    3. THE GUIDE (Description):
+       - 2-3 sentences MAX
+       - Format: "[Scientific fact/research]. [What it means/application]."
+       - MUST sound authoritative but accessible
+       - Include words like: research, studies, neuroscience, brain
+       
+    4. WINNING THEMES (Use these topics - they're PROVEN):
+       - Smart people behaviors ⭐⭐⭐ (TOP PERFORMER)
+       - Pretending/emotional masking ⭐⭐⭐
+       - Brain patterns & intelligence ⭐⭐
+       - Social intelligence signals ⭐⭐
+       - Learning & cognitive abilities ⭐
     
-    5. LANGUAGE: English ONLY. High-impact.
+    5. POWER WORDS (Use these - they appear in top videos):
+       - brain, smart, people, intelligence, fact
+       - pretending, habit, sharper, more, your
     
-    STRICTLY FOLLOW THIS FORMAT:
-    HOOK: [The 3-5 word hook - MUST be short and punchy]
-    GUIDE: [Sentence 1 with scientific fact]. [Sentence 2 with tactical use].
-    ---TITLE: [Viral YouTube Title with proven keywords]
+    6. AVOID:
+       - Generic statements without prefix
+       - "THE [NOUN]" format (old system - doesn't work as well)
+       - Body language focus (unless combined with intelligence)
+       - Overly complex or vague statements
     
-    IMPORTANT: If your hook is longer than 5 words, START OVER.
+    LANGUAGE: English ONLY.
+    
+    STRICT OUTPUT FORMAT:
+    HOOK: [Format MUST be "BRAIN FACT:" or "PSYCHOLOGY FACT:" + short statement]
+    GUIDE: [2-3 sentences with research/science backing]
+    ---TITLE: [Full title with #TheBrainLab at the end]
+    
+    EXAMPLES OF CORRECT OUTPUT:
+    
+    HOOK: BRAIN FACT: Overthinking
+    GUIDE: Neuroscience shows intelligent brains process more variables simultaneously. This mental hyperactivity is actually advanced cognitive function, not anxiety.
+    ---TITLE: Brain Fact: Overthinking is a sign of high intelligence... #TheBrainLab
+    
+    IMPORTANT: If you don't follow these EXACT formats, the content will fail!
     """
     
     # רשימת מודלים לנסות
@@ -86,39 +122,39 @@ def get_viral_content():
                 model=model_name, 
                 config=types.GenerateContentConfig(
                     system_instruction=instruction, 
-                    temperature=0.85  # מעט נמוך יותר לעקביות
+                    temperature=0.85
                 ),
-                contents="Execute an intelligence briefing on a high-impact psychological discovery."
+                contents="Generate a viral psychology insight about smart people or intelligence."
             )
             
             full_text = response.text.strip()
-            print(f"\n--- DISCOVERY BRIEFING ---\n{full_text}\n-------------------")
+            print(f"\n--- AI GENERATION ---\n{full_text}\n-------------------")
             
             hook, title, guide = parse_response(full_text)
             
             if hook and title and guide:
-                # בדיקת איכות נוספת
-                if validate_content_quality(hook, guide, title):
-                    print(f"✅ High-quality content validated!")
+                # בדיקת איכות מחמירה יותר
+                if validate_new_rules(hook, guide, title):
+                    print(f"✅ AI content validated!")
                     return hook, title, guide
                 else:
-                    print(f"⚠️ Content didn't pass quality check, trying next model...")
+                    print(f"⚠️ Content didn't pass validation, trying next model...")
                     continue
             else:
-                print(f"⚠️ Parsing incomplete, trying next model...")
+                print(f"⚠️ Parsing failed, trying next model...")
                 continue
                 
         except Exception as e:
             print(f"⚠️ Model {model_name} failed: {e}")
             continue
     
-    # Fallback
-    print(f"❌ All models failed. Using proven fallback content.")
-    return get_proven_fallback_content()
+    # Fallback - בוחר מהרשימה המוכחת
+    print(f"❌ AI generation failed. Using proven fallback.")
+    return get_proven_fallback()
 
 
 def parse_response(full_text):
-    """מנתח את התגובה בצורה בטוחה"""
+    """מנתח את התגובה של ה-AI"""
     try:
         if "HOOK:" not in full_text or "GUIDE:" not in full_text:
             raise ValueError("Missing HOOK or GUIDE markers")
@@ -146,36 +182,44 @@ def parse_response(full_text):
         return None, None, None
 
 
-def validate_content_quality(hook, guide, title):
+def validate_new_rules(hook, guide, title):
     """
-    בדיקת איכות מבוססת דאטה אמיתית.
-    החזר True אם התוכן עומד בסטנדרט.
+    בדיקת איכות מבוססת על הכללים החדשים (55 סרטונים)
     """
     issues = []
     
-    # בדיקה 1: אורך ה-Hook
-    hook_words = len(hook.split())
-    if hook_words > 5:
-        issues.append(f"Hook too long: {hook_words} words (max 5)")
+    # בדיקה 1: Hook מתחיל עם הפורמט הנכון?
+    valid_prefixes = ["BRAIN FACT:", "PSYCHOLOGY FACT:", "SOCIAL INTELLIGENCE:"]
+    has_valid_prefix = any(hook.startswith(prefix) for prefix in valid_prefixes)
     
-    # בדיקה 2: ה-Hook מתחיל ב-"THE"?
-    if not hook.startswith("THE "):
-        issues.append("Hook should start with 'THE'")
+    if not has_valid_prefix:
+        issues.append(f"Hook must start with: {', '.join(valid_prefixes)}")
     
-    # בדיקה 3: ה-Guide יותר מדי ארוך?
+    # בדיקה 2: Title כולל #TheBrainLab?
+    if "#TheBrainLab" not in title and "#thebrainlab" not in title.lower():
+        issues.append("Title MUST include #TheBrainLab hashtag")
+    
+    # בדיקה 3: Title לא ארוך מדי?
+    title_words = len(title.replace("#TheBrainLab", "").split())
+    if title_words > 15:
+        issues.append(f"Title too long: {title_words} words (max 12 + hashtag)")
+    
+    # בדיקה 4: Guide לא ארוך מדי?
     guide_sentences = guide.split('. ')
-    if len(guide_sentences) > 3:
+    if len(guide_sentences) > 4:
         issues.append(f"Guide too long: {len(guide_sentences)} sentences (max 3)")
     
-    # בדיקה 4: האם הכותרת כוללת מילת מפתח מנצחת?
-    winning_keywords = ['Secret', 'Protocol', 'Tactic', 'Watch This', 'See', 'Instantly']
-    has_keyword = any(keyword.lower() in title.lower() for keyword in winning_keywords)
-    if not has_keyword:
-        issues.append(f"Title missing proven keyword (use: {', '.join(winning_keywords)})")
+    # בדיקה 5: האם יש מילות כוח?
+    power_words = ['brain', 'smart', 'intelligence', 'research', 'studies', 'neuroscience', 'people']
+    text_lower = (hook + title + guide).lower()
+    has_power_words = any(word in text_lower for word in power_words)
     
-    # אם יש בעיות - הדפס אותן
+    if not has_power_words:
+        issues.append(f"Content should include power words: {', '.join(power_words[:3])}")
+    
+    # אם יש בעיות - הדפס
     if issues:
-        print("⚠️ Quality issues detected:")
+        print("⚠️ Validation issues:")
         for issue in issues:
             print(f"  - {issue}")
         return False
@@ -183,38 +227,42 @@ def validate_content_quality(hook, guide, title):
     return True
 
 
-def get_proven_fallback_content():
+def get_proven_fallback():
     """
-    תוכן גיבוי מבוסס על הווידאואים המצליחים ביותר.
+    תוכן גיבוי מבוסס על הסרטונים המצליחים ביותר מהדאטא
     """
+    if HOOKS_AVAILABLE:
+        return get_random_proven_hook()
+    
+    # אם אין גישה לקובץ - fallback קשיח
     proven_winners = [
         (
-            "THE PUPIL SIGNAL",
-            "The Pupil Signal: Read Intent Through Eye Dilation",
-            "Research shows pupils dilate 30% when viewing high-value targets. Watch for this micro-signal during negotiations to identify their true priorities."
+            "BRAIN FACT: Fewer Friends",
+            "Brain Fact: Smart people tend to have fewer friends than average... #TheBrainLab",
+            "Research shows highly intelligent people prefer deep connections over many superficial ones. Their brains process relationships differently, prioritizing quality over quantity."
         ),
         (
-            "THE NECK TELL",
-            "The Neck Tell: FBI Interrogation Secret Revealed",
-            "FBI behavioral analysts observe that stress triggers instant throat-touching. Monitor this reflex to detect deception before words confirm it."
+            "BRAIN FACT: Pretending Not To Care",
+            "Brain Fact: Pretending not to care is the habit of someone who cares deeply... #TheBrainLab",
+            "This emotional masking is a protective mechanism. Ironically, the more someone pretends not to care, the more they actually do."
         ),
         (
-            "THE BOUNDARY PROTOCOL",
-            "The Boundary Protocol: Brené Brown's Power Move",
-            "Strategic vulnerability creates psychological safety that compels reciprocity. Share your boundary first to establish dominance through perceived authenticity."
+            "BRAIN FACT: Sharper Dreams",
+            "Brain Fact: The sharper your brain, the more you dream... #TheBrainLab",
+            "Neuroscientists discovered higher cognitive function correlates with more vivid dreams. Your brain stays active processing information even during sleep."
         ),
         (
-            "THE SILENCE WEAPON",
-            "The Silence Weapon: 4-Second Dominance Tactic",
-            "Studies confirm that 4-second pauses before responding increase perceived authority by 60%. The silence creates tension that positions you as the decision-maker."
+            "BRAIN FACT: Optimism Learned",
+            "Brain Fact: Optimism can be learned... #TheBrainLab",
+            "Neuroplasticity research shows you can rewire your brain's response patterns. Optimism is a trainable skill, not just a personality trait."
         ),
         (
-            "THE GAZE ANCHOR",
-            "The Gaze Anchor: Plant Suggestions Through Eye Contact",
-            "Directional gaze triggers automatic attention-following in 85% of interactions. Shift your eyes deliberately to guide their focus and frame the narrative."
+            "SOCIAL INTELLIGENCE: Waiter Test",
+            "Social Intelligence: The way you treat a waiter reveals your true character... #TheBrainLab",
+            "Behavioral psychologists use this as a key indicator. How someone treats those who can't benefit them shows their real personality."
         )
     ]
     
     hook, title, guide = random.choice(proven_winners)
-    print(f"🔄 Using proven fallback: {title}")
+    print(f"🔄 Using hardcoded fallback: {title}")
     return hook, title, guide
