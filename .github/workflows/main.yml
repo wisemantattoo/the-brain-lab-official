@@ -2,7 +2,10 @@ name: Daily Video Bot
 
 on:
   schedule:
-    - cron: '0 8 * * *' # רץ כל יום ב-8 בבוקר UTC
+    # שלוש הרצות ביום - פריסה אופטימלית
+    - cron: '0 8 * * *'   # 8:00 AM UTC = 10:00 AM Israel
+    - cron: '0 14 * * *'  # 2:00 PM UTC = 4:00 PM Israel  
+    - cron: '0 20 * * *'  # 8:00 PM UTC = 10:00 PM Israel
   workflow_dispatch:      # מאפשר הרצה ידנית
 
 jobs:
