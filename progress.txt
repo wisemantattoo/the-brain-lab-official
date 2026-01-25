@@ -178,3 +178,69 @@ This file will be updated by Claude Code during each iteration.
 **Next Task:** Story 4 - Hook Pattern Analysis
 
 ---
+
+## Iteration 5 - 2026-01-25
+
+**Task:** Story 4 - Hook Pattern Analysis
+
+**Status:** ✅ COMPLETED
+
+**Actions Taken:**
+1. Created `modules/hook_analyzer.py` - comprehensive hook pattern analysis module
+2. Implemented Gemini AI integration for intelligent title analysis
+3. Built rule-based categorization as fallback when AI unavailable
+4. Created conversion correlation system to identify which hooks drive sales
+
+**Key Functions Implemented:**
+- `categorize_hook_by_rules(title)` - Rule-based pattern matching for hook categories
+- `get_gemini_client(api_key)` - Creates Gemini AI client connection
+- `analyze_hooks_with_gemini(shorts_data, api_key)` - AI-powered batch title analysis
+- `calculate_category_performance(shorts_with_categories)` - Aggregates metrics per category
+- `correlate_hooks_with_conversions(...)` - Main entry point combining all data sources
+- `generate_hook_insights(category_performance, shorts)` - Generates actionable insights
+- `print_hook_analysis_report(result)` - CLI-friendly formatted output
+
+**Hook Categories Defined:**
+- BRAIN FACT: Brain function, intelligence, cognitive abilities
+- PSYCHOLOGY FACT: Psychological insights, behavior patterns
+- SOCIAL INTELLIGENCE: Social dynamics, interpersonal skills
+- BODY LANGUAGE: Non-verbal communication, gestures
+- DARK PSYCHOLOGY: Manipulation tactics, deception detection
+- PERFORMANCE: Cognitive optimization, productivity tips
+- OTHER: Unique or uncategorized hooks
+
+**Features:**
+- Gemini AI batch analysis of all Short titles with fallback to rules
+- Extracts hook_type (curiosity, surprise, promise, fear, etc.)
+- Extracts emotional_trigger for each Short
+- Category performance metrics: views, sales, conversion rate, RPM
+- Identifies top performing categories
+- Finds underutilized high-performers (opportunity detection)
+- Hook type conversion analysis
+- Integrates with shorts_analytics.py and gumroad_tracker.py
+- CLI entry point with configurable lookback period
+
+**Metrics Calculated Per Category:**
+- Total shorts count
+- Total views, sales, revenue
+- Average views per short
+- Conversion rate (sales per 1K views)
+- RPM (revenue per 1K views)
+- Converting shorts count
+
+**CLI Usage:**
+- `python modules/hook_analyzer.py` - Default 30-day analysis
+- `python modules/hook_analyzer.py 60` - 60-day lookback
+
+**Files Created:**
+- `modules/hook_analyzer.py` - Complete hook pattern analysis module
+
+**Integration Notes:**
+- Uses `shorts_analytics.get_shorts_analytics()` for YouTube data
+- Uses `gumroad_tracker.get_sales_analytics()` and `match_sales_to_shorts()` for sales
+- Uses Gemini AI (same pattern as ai_brain.py) for intelligent analysis
+- Environment variables: YOUTUBE_API_KEY, CHANNEL_ID, GUMROAD_ACCESS_TOKEN, GEMINI_API_KEY
+
+**Next Task:** Story 5 - AI Content Suggestions
+
+---
