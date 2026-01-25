@@ -124,3 +124,57 @@ This file will be updated by Claude Code during each iteration.
 **Next Task:** Story 3 - Conversion Dashboard
 
 ---
+
+## Iteration 4 - 2026-01-25
+
+**Task:** Story 3 - Conversion Dashboard
+
+**Status:** ✅ COMPLETED
+
+**Actions Taken:**
+1. Created `dashboard_shorts.py` - standalone conversion dashboard combining YouTube + Gumroad data
+2. Integrated `shorts_analytics.py` and `gumroad_tracker.py` modules
+3. Implemented conversion rate calculations (sales per 1000 views)
+4. Built comprehensive dashboard with sorted table output
+
+**Key Functions Implemented:**
+- `get_conversion_data(channel_id, youtube_api_key, gumroad_token, product_id, days)` - Main data aggregation function
+- `print_conversion_dashboard(data)` - Formatted CLI dashboard output
+- `export_conversion_csv(data, filename)` - CSV export functionality
+
+**Features:**
+- Combines YouTube Shorts analytics with Gumroad sales data
+- Calculates per-Short conversion rate (sales per 1000 views)
+- Calculates RPM (Revenue Per Mille - revenue per 1000 views)
+- Tracks YouTube attribution rate for sales
+- Identifies top converting Shorts
+- Identifies highest RPM Shorts
+- Displays sorted table of all Shorts by conversion rate
+- Provides actionable insights based on data
+- CSV export with --csv flag
+- Configurable lookback period (default 30 days)
+
+**Metrics Calculated:**
+- Total Shorts, Views, Sales, Revenue
+- YouTube Attribution Rate (% of sales from YouTube)
+- Overall Conversion Rate (sales per 1K views)
+- Overall RPM (revenue per 1K views)
+- Per-Short: views, likes, comments, engagement rate, sales, revenue, conversion rate, RPM
+- Converting Shorts percentage
+
+**CLI Usage:**
+- `python dashboard_shorts.py` - Default 30-day report
+- `python dashboard_shorts.py 60` - 60-day lookback
+- `python dashboard_shorts.py --csv` - Export to CSV
+
+**Files Created:**
+- `dashboard_shorts.py` - Complete conversion dashboard
+
+**Integration Notes:**
+- Uses `shorts_analytics.get_shorts_analytics()` for YouTube data
+- Uses `gumroad_tracker.get_sales_analytics()` and `match_sales_to_shorts()` for sales data
+- All environment variables inherited from modules (YOUTUBE_API_KEY, CHANNEL_ID, GUMROAD_ACCESS_TOKEN)
+
+**Next Task:** Story 4 - Hook Pattern Analysis
+
+---
