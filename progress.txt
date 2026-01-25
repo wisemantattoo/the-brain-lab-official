@@ -76,3 +76,51 @@ This file will be updated by Claude Code during each iteration.
 **Next Task:** Story 2 - Gumroad Sales Tracking
 
 ---
+
+## Iteration 3 - 2026-01-25
+
+**Task:** Story 2 - Gumroad Sales Tracking
+
+**Status:** ✅ COMPLETED
+
+**Actions Taken:**
+1. Researched Gumroad API v2 documentation and endpoints
+2. Created `modules/gumroad_tracker.py` - complete sales tracking module
+3. Implemented OAuth2 authentication using GUMROAD_ACCESS_TOKEN
+4. Built sales fetching with pagination support
+5. Added referrer data extraction and YouTube attribution
+
+**Key Functions Implemented:**
+- `get_gumroad_client(access_token)` - Creates authenticated API client
+- `fetch_sales(access_token, product_id, email, after, before, page)` - Fetches sales with filters
+- `fetch_all_sales(access_token, product_id, days)` - Fetches all sales with pagination
+- `parse_sale(sale)` - Standardizes sale records
+- `extract_youtube_referrals(sales)` - Filters YouTube-attributed sales
+- `extract_video_id_from_referrer(referrer)` - Extracts YouTube video IDs from URLs
+- `match_sales_to_shorts(sales, shorts)` - Matches sales to YouTube Shorts
+- `get_sales_analytics(access_token, product_id, days)` - Main entry point with summary stats
+- `get_referrer_breakdown(sales)` - Analyzes referrer sources
+- `print_sales_report(analytics_result)` - CLI-friendly formatted output
+
+**Features:**
+- Gumroad API v2 integration with OAuth2 Bearer token auth
+- Pagination handling (max 100 pages safety limit)
+- Date range filtering (default 30 days lookback)
+- YouTube referrer detection (youtube.com, youtu.be, m.youtube.com patterns)
+- Video ID extraction from referrer URLs (watch, shorts, short URLs)
+- Referrer categorization (YouTube, Twitter/X, Instagram, TikTok, Facebook, Google, Gumroad Discover, Direct, Other)
+- Summary statistics (total sales, revenue, YouTube attribution percentage)
+- CLI entry point for standalone usage
+- Environment variable configuration (GUMROAD_ACCESS_TOKEN)
+
+**Files Created:**
+- `modules/gumroad_tracker.py` - Complete Gumroad sales tracking module
+
+**Integration Notes:**
+- Works with `shorts_analytics.py` via `match_sales_to_shorts()` function
+- Ready for Story 3 (Conversion Dashboard) integration
+- Follows same pattern as existing modules (env vars, CLI entry point)
+
+**Next Task:** Story 3 - Conversion Dashboard
+
+---
