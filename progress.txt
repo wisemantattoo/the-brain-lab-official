@@ -308,3 +308,58 @@ This file will be updated by Claude Code during each iteration.
 **Next Task:** Story 6 - Weekly Report
 
 ---
+
+## Iteration 7 - 2026-01-28
+
+**Task:** Story 6 - Weekly Report
+
+**Status:** ✅ COMPLETED
+
+**Actions Taken:**
+1. Reviewed existing `reports/weekly_summary.py` (file already existed from previous work)
+2. Fixed data structure mismatch in `generate_markdown_report()` function
+3. Fixed data structure mismatch in `generate_insights()` function
+4. Updated field references to match `calculate_category_performance()` output structure
+5. Verified Python syntax is correct
+
+**Key Functions in Module:**
+- `get_week_date_range()` - Calculates start and end dates for weekly summary
+- `compile_weekly_stats(days)` - Main entry point that aggregates YouTube + Gumroad data
+- `generate_markdown_report(stats, output_file)` - Generates markdown-formatted weekly report
+- `generate_insights(data)` - Generates actionable insights from weekly data
+- `print_weekly_report(stats)` - Prints formatted console report
+
+**Features:**
+- Integrates YouTube Shorts analytics, Gumroad sales, and conversion data
+- Calculates weekly summary statistics (views, engagement, sales, revenue)
+- Identifies top performers by views and conversion rate
+- Category performance breakdown
+- Automatic markdown report generation with tables
+- Referrer breakdown (traffic source analysis)
+- Actionable insights based on performance data
+- CLI support with `--markdown` and `--output` flags
+
+**CLI Usage:**
+- `python reports/weekly_summary.py` - Default 7-day console report
+- `python reports/weekly_summary.py 14` - 14-day lookback
+- `python reports/weekly_summary.py --markdown` - Generate markdown report
+- `python reports/weekly_summary.py --markdown --output report.md` - Save to specific file
+
+**Bug Fixes Applied:**
+- Changed `stats_data['shorts_count']` to `stats_data['count']`
+- Changed `stats_data['views']` to `stats_data['total_views']`
+- Changed `stats_data['sales']` to `stats_data['total_sales']`
+- Aligned field names with `calculate_category_performance()` return structure
+
+**Files Modified:**
+- `reports/weekly_summary.py` - Fixed data structure field references
+
+**Integration Notes:**
+- Uses `shorts_analytics.get_shorts_analytics()` for YouTube data
+- Uses `gumroad_tracker.get_sales_analytics()` and `match_sales_to_shorts()` for sales
+- Uses `hook_analyzer.categorize_hook_by_rules()` and `calculate_category_performance()` for categories
+- Environment variables: YOUTUBE_API_KEY, CHANNEL_ID, GUMROAD_ACCESS_TOKEN
+
+**All Stories Completed:** This was the final story in the PRD.
+
+---

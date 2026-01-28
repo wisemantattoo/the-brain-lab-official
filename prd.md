@@ -125,14 +125,14 @@ Build an AI-powered system that learns which YouTube Shorts convert viewers into
 
 ### **Story 6: Weekly Report**
 **Priority:** LOW ⭐
-**Status:** ⏳ Not Started
+**Status:** ✅ Completed
 
 **As a creator**, I want weekly summaries
 
 **Tasks:**
-- [ ] ⏳ Create reports/weekly_summary.py
-- [ ] ⏳ Compile weekly stats
-- [ ] ⏳ Generate markdown report
+- [x] ✅ Create reports/weekly_summary.py
+- [x] ✅ Compile weekly stats
+- [x] ✅ Generate markdown report
 
 **Estimated Time:** 15 minutes
 
