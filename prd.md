@@ -1,141 +1,129 @@
-# BRAIN LAB - YouTube Shorts Conversion Optimizer
+# 🔍 PROJECT AUDIT & OPTIMIZATION - The Brain Lab Bot
 
-**Product Requirements Document (PRD)**
-
----
-
-## 🎯 Project Vision
-
-Build an AI-powered system that learns which YouTube Shorts convert viewers into buyers of the "21-Day Personal Growth Tracker" ($4.99 on Gumroad).
-
-**Core Principle:** Optimize for revenue, not just views.
+**Goal:** Comprehensive code review, bug detection, and optimization recommendations
 
 ---
 
-## 📊 Success Metrics
-
-- Conversion rate per Short (views → sales)
-- Hook retention in first 3 seconds
-- Click-through rate to bio link
-- Revenue per 1000 views
-- Pattern recognition (what works?)
-
----
-
-## 🏗️ User Stories & Tasks
-
----
-
-### **Story 0: Code Audit & Integration Plan**
+## Story 1: Project Structure & Code Mapping ✅
 **Priority:** CRITICAL ⭐⭐⭐
-**Status:** ✅ Completed
-
-**As a developer**, I want to understand existing code structure
-**So that** I can reuse what works and avoid breaking things
 
 **Tasks:**
-- [x] ✅ Scan all .py files in project
-- [x] ✅ Document what each file does
-- [x] ✅ Identify reusable code
-- [x] ✅ Save findings to docs/code_audit.md
+- [x] Scan all Python files and map dependencies
+- [x] Identify main modules: AI brain, Video lab, YouTube unit, Database
+- [x] Document data flow: AI → Video → YouTube → Database
+- [x] Check for duplicate code or redundant functions
+- [x] Save architecture diagram to `docs/project_structure.md`
 
-**Estimated Time:** 10-15 minutes
+**Estimated Time:** 20 minutes
+**Completed:** 2026-01-29
 
 ---
 
-### **Story 1: YouTube Shorts Analytics**
+## Story 2: Bug & Error Detection ⏳
 **Priority:** HIGH ⭐⭐⭐
-**Status:** ✅ Completed
-
-**As a creator**, I want to see Shorts performance data
 
 **Tasks:**
-- [x] ✅ Create modules/shorts_analytics.py
-- [x] ✅ Connect to YouTube API
-- [x] ✅ Fetch Shorts from last 30 days
-- [x] ✅ Extract: video_id, title, views, likes
+- [ ] Check error handling in all modules
+- [ ] Identify missing try-except blocks
+- [ ] Review API failure scenarios (Gemini, YouTube, Unsplash)
+- [ ] Check file I/O operations for failures
+- [ ] Verify database transaction handling
+- [ ] Save findings to `docs/bugs_found.md`
 
-**Estimated Time:** 15-20 minutes
+**Estimated Time:** 25 minutes
 
 ---
 
-### **Story 2: Gumroad Sales Tracking**
+## Story 3: Performance Optimization ⏳
+**Priority:** HIGH ⭐⭐
+
+**Tasks:**
+- [ ] Analyze video creation speed (MoviePy operations)
+- [ ] Check for unnecessary API calls
+- [ ] Review image download & processing efficiency
+- [ ] Identify caching opportunities (Unsplash images, AI responses)
+- [ ] Suggest async/parallel processing improvements
+- [ ] Save recommendations to `docs/performance_optimization.md`
+
+**Estimated Time:** 20 minutes
+
+---
+
+## Story 4: AI Content Quality Review ⏳
 **Priority:** HIGH ⭐⭐⭐
-**Status:** ✅ Completed
-
-**As a creator**, I want to see which sales came from YouTube
 
 **Tasks:**
-- [x] ✅ Create modules/gumroad_tracker.py
-- [x] ✅ Connect to Gumroad API
-- [x] ✅ Fetch sales with referrer data
-- [x] ✅ Match sales to Shorts
+- [ ] Review `winning_hooks.py` - analyze proven patterns
+- [ ] Check `ai_brain.py` prompt quality
+- [ ] Verify hook validation rules effectiveness
+- [ ] Compare data-driven (80%) vs AI-generated (20%) strategy
+- [ ] Suggest improvements to AI instructions
+- [ ] Save analysis to `docs/ai_content_review.md`
 
-**Estimated Time:** 15-20 minutes
+**Estimated Time:** 20 minutes
 
 ---
 
-### **Story 3: Conversion Dashboard**
-**Priority:** HIGH ⭐⭐⭐
-**Status:** ✅ Completed
-
-**As a creator**, I want to see performance + sales together
-
-**Tasks:**
-- [x] ✅ Create dashboard_shorts.py
-- [x] ✅ Combine YouTube + Gumroad data
-- [x] ✅ Calculate conversion rate
-- [x] ✅ Display sorted table
-
-**Estimated Time:** 20-25 minutes
-
----
-
-### **Story 4: Hook Pattern Analysis**
+## Story 5: YouTube Integration Issues ⏳
 **Priority:** MEDIUM ⭐⭐
-**Status:** ✅ Completed
-
-**As a creator**, I want to understand which hooks convert
 
 **Tasks:**
-- [x] ✅ Create modules/hook_analyzer.py
-- [x] ✅ Use Gemini to analyze titles
-- [x] ✅ Categorize hook types
-- [x] ✅ Correlate with conversion rates
-
-**Estimated Time:** 20-25 minutes
-
----
-
-### **Story 5: AI Content Suggestions**
-**Priority:** MEDIUM ⭐⭐
-**Status:** ✅ Completed
-
-**As a creator**, I want AI to suggest next Short ideas
-
-**Tasks:**
-- [x] ✅ Create modules/content_suggester.py
-- [x] ✅ Analyze top performers
-- [x] ✅ Generate 5 new ideas
-- [x] ✅ Save to suggestions.md
-
-**Estimated Time:** 15-20 minutes
-
----
-
-### **Story 6: Weekly Report**
-**Priority:** LOW ⭐
-**Status:** ✅ Completed
-
-**As a creator**, I want weekly summaries
-
-**Tasks:**
-- [x] ✅ Create reports/weekly_summary.py
-- [x] ✅ Compile weekly stats
-- [x] ✅ Generate markdown report
+- [ ] Review OAuth token refresh mechanism
+- [ ] Check video upload error handling
+- [ ] Verify auto-comment posting reliability
+- [ ] Check Shorts-specific metadata (aspect ratio, duration)
+- [ ] Suggest retry logic improvements
+- [ ] Save to `docs/youtube_integration.md`
 
 **Estimated Time:** 15 minutes
 
 ---
 
-END OF PRD
+## Story 6: Database & Analytics Integration ⏳
+**Priority:** MEDIUM ⭐⭐
+
+**Tasks:**
+- [ ] Review `database.py` schema and queries
+- [ ] Check data consistency between bot and analytics
+- [ ] Verify domain identification accuracy
+- [ ] Suggest improvements for conversion tracking
+- [ ] Recommend better hook pattern analysis
+- [ ] Save to `docs/database_improvements.md`
+
+**Estimated Time:** 20 minutes
+
+---
+
+## Story 7: Security & Best Practices ⏳
+**Priority:** HIGH ⭐⭐⭐
+
+**Tasks:**
+- [ ] Verify all secrets are in environment variables (not hardcoded)
+- [ ] Check API key exposure risks
+- [ ] Review GitHub Actions security
+- [ ] Verify file permissions
+- [ ] Check for sensitive data in logs
+- [ ] Save to `docs/security_review.md`
+
+**Estimated Time:** 15 minutes
+
+---
+
+## Story 8: Master Recommendations Report ⏳
+**Priority:** CRITICAL ⭐⭐⭐
+
+**Tasks:**
+- [ ] Compile all findings into comprehensive report
+- [ ] Prioritize: Quick Wins vs Long-term improvements
+- [ ] Estimate effort for each recommendation (hours/days)
+- [ ] Create actionable roadmap with phases
+- [ ] Include code examples for critical fixes
+- [ ] Save master report to `docs/AUDIT_REPORT.md`
+
+**Estimated Time:** 25 minutes
+
+---
+
+**Total Estimated Time:** ~3 hours of autonomous work
+**Ralph Loop Iterations:** ~15-20 iterations
+
