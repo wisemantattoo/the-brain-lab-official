@@ -2,56 +2,35 @@ name: Daily Video Bot
 
 on:
   schedule:
-    # שלוש הרצות ביום - פריסה אופטימלית
-    - cron: '0 8 * * *'   # 8:00 AM UTC = 10:00 AM Israel
-    - cron: '0 14 * * *'  # 2:00 PM UTC = 4:00 PM Israel  
-    - cron: '0 20 * * *'  # 8:00 PM UTC = 10:00 PM Israel
-  workflow_dispatch:      # מאפשר הרצה ידנית
+    - cron: '0 8,14,20 * * *'  # 3 זמנים בשורה אחת!
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-
-      - name: Install System Dependencies
-        run: |
+      - run: |
           sudo apt-get update
           sudo apt-get install -y imagemagick libgl1
-          # תיקון ImageMagick policy לשתי גרסאות אפשריות
           for policy in /etc/ImageMagick-*/policy.xml; do
             if [ -f "$policy" ]; then
               sudo sed -i 's/rights="none"/rights="read|write"/g' "$policy"
             fi
           done
-
-      - name: Install Python Dependencies
-        run: |
+      - run: |
           python -m pip install --upgrade pip
           pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client moviepy==1.0.3 requests Pillow==9.5.0 google-genai opencv-python
-
-      - name: Run Bot
+      - run: python main.py
         env:
-          # Google AI
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          
-          # YouTube OAuth - המפתחות החדשים! [FIXED: 2026-01-05]
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
-          
-          # Media
           UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
-          
-          # TikTok
           TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
           TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
-        run: python main.py
